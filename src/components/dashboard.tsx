@@ -18,6 +18,7 @@ import {
   RefreshCw,
   AlertCircle,
   LogOut,
+  X,
 } from 'lucide-react';
 import { Draft } from '@/lib/domain';
 import RecordForm, { defaults } from './record-form';
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const { tr, money, dateLabel, locale } = useI18n();
   const [s, setS] = useState<Snapshot | null>(null),
     [section, setSection] = useState<Section>('today'),
+    [chatOpen, setChatOpen] = useState(false),
     [error, setError] = useState(''),
     [toast, setToast] = useState(''),
     [editing, setEditing] = useState<Editing | null>(null),
@@ -66,7 +68,12 @@ export default function Dashboard() {
     [allowDuplicate, setAllowDuplicate] = useState(false),
     [pendingDelete, setPendingDelete] = useState<Entity | null>(null);
   const photoInput = useRef<HTMLInputElement>(null),
-    fileInput = useRef<HTMLInputElement>(null);
+    fileInput = useRef<HTMLInputElement>(null),
+    chatLauncher = useRef<HTMLButtonElement>(null);
+  function closeChat() {
+    setChatOpen(false);
+    chatLauncher.current?.focus({ preventScroll: true });
+  }
   const refresh = useCallback(async () => {
     const state = await api<Snapshot>('/api/household');
     setS(state);
@@ -278,6 +285,7 @@ export default function Dashboard() {
                 className={section === key ? 'active' : ''}
                 onClick={() => {
                   setSection(key);
+                  if (key === 'coach') setChatOpen(false);
                   setError('');
                 }}
               >
@@ -624,14 +632,63 @@ export default function Dashboard() {
             processDoc={processDoc}
           />
         )}
-        {section === 'coach' && (
-          <CoachView {...viewProps} showReview={() => setSection('documents')} />
-        )}
+        <div
+          id="household-chat"
+          className={section === 'coach' ? 'coach-host' : 'coach-host coach-dock'}
+          hidden={section !== 'coach' && !chatOpen}
+          role={section === 'coach' ? undefined : 'dialog'}
+          aria-label={tr('Your money coach')}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' && section !== 'coach') {
+              e.preventDefault();
+              closeChat();
+            }
+          }}
+        >
+          <CoachView
+            {...viewProps}
+            visible={section === 'coach' || chatOpen}
+            compact={section !== 'coach'}
+            onClose={closeChat}
+            onExpand={() => {
+              setSection('coach');
+              setChatOpen(false);
+            }}
+            showSettings={() => {
+              setSection('settings');
+              closeChat();
+            }}
+            showReview={() => {
+              setSection('documents');
+              closeChat();
+            }}
+          />
+        </div>
         {section === 'settings' && <SettingsView {...viewProps} />}
         <footer>
           {tr('Progress, not perfection. Every dollar you add makes the picture clearer.')}
         </footer>
       </main>
+      {section !== 'coach' && (
+        <button
+          ref={chatLauncher}
+          type="button"
+          className="chat-launcher"
+          aria-label={tr(chatOpen ? 'Minimize chat' : 'Open money chat')}
+          aria-expanded={chatOpen}
+          aria-controls="household-chat"
+          aria-haspopup="dialog"
+          title={tr(chatOpen ? 'Minimize chat' : 'Open money chat')}
+          onClick={() => (chatOpen ? closeChat() : setChatOpen(true))}
+        >
+          {chatOpen ? (
+            <X size={25} aria-hidden="true" />
+          ) : (
+            <MessageCircle size={27} aria-hidden="true" />
+          )}
+          <span>{tr('Chat')}</span>
+        </button>
+      )}
       {showAdd && (
         <Dialog title={tr('What would you like to add?')} onClose={() => setShowAdd(false)}>
           <div className="add-grid">

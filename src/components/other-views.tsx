@@ -15,6 +15,8 @@ import {
   Plus,
   Settings,
   Download,
+  Maximize2,
+  Minus,
 } from 'lucide-react';
 import { Draft, dollarsToCents } from '@/lib/domain';
 import { ViewProps, api, Source } from './client-utils';
@@ -261,21 +263,41 @@ export function CoachView({
   refresh,
   start,
   showReview,
-}: ViewProps & { showReview: () => void }) {
+  visible,
+  compact,
+  onClose,
+  onExpand,
+  showSettings,
+}: ViewProps & {
+  showReview: () => void;
+  visible: boolean;
+  compact: boolean;
+  onClose: () => void;
+  onExpand: () => void;
+  showSettings: () => void;
+}) {
   const { tr, money, dateLabel, locale } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]),
     [chat, setChat] = useState(''),
     [thinking, setThinking] = useState(false),
     [error, setError] = useState('');
-  const bottom = useRef<HTMLDivElement>(null);
+  const messageList = useRef<HTMLDivElement>(null);
+  const minimizeButton = useRef<HTMLButtonElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     api<Message[]>('/api/chat')
       .then(setMessages)
       .catch((e) => setError(e.message));
   }, []);
   useEffect(() => {
-    bottom.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, [messages, thinking]);
+    if (visible && messageList.current)
+      messageList.current.scrollTop =
+        messages.length || thinking ? messageList.current.scrollHeight : 0;
+  }, [messages, thinking, visible, compact]);
+  useEffect(() => {
+    if (visible)
+      (compact ? minimizeButton.current : composer.current)?.focus({ preventScroll: true });
+  }, [visible, compact]);
   async function send(text: string) {
     if (!text.trim() || thinking) return;
     setThinking(true);
@@ -300,7 +322,7 @@ export function CoachView({
       <section className="chat-panel">
         <div className="chat-top">
           <span className="coach-avatar">s</span>
-          <div>
+          <div className="grow">
             <strong>{tr('Your money coach')}</strong>
             <p>
               {connections.ai
@@ -308,9 +330,45 @@ export function CoachView({
                 : tr('AI connection pending · manual tracking is ready')}
             </p>
           </div>
+          {compact && (
+            <div className="chat-window-actions">
+              <button
+                type="button"
+                className="icon-button"
+                onClick={onExpand}
+                aria-label={tr('Expand chat')}
+                title={tr('Expand chat')}
+              >
+                <Maximize2 size={18} aria-hidden="true" />
+              </button>
+              <button
+                ref={minimizeButton}
+                type="button"
+                className="icon-button"
+                onClick={onClose}
+                aria-label={tr('Minimize chat')}
+                title={tr('Minimize chat')}
+              >
+                <Minus size={21} aria-hidden="true" />
+              </button>
+            </div>
+          )}
         </div>
-        {error && <div className="error">{tr(error)}</div>}
-        <div className="chat-messages">
+        <div className="chat-messages" ref={messageList}>
+          {error && (
+            <div className="error" role="alert">
+              {tr(error)}
+            </div>
+          )}
+          {!connections.ai && (
+            <div className="chat-connect">
+              <p>{tr('Connect an AI model to start chatting.')}</p>
+              <button type="button" className="secondary small-button" onClick={showSettings}>
+                <Settings size={16} aria-hidden="true" />
+                {tr('Connect assistant')}
+              </button>
+            </div>
+          )}
           {!messages.length && (
             <div className="coach-welcome">
               <span className="icon-circle">
@@ -375,8 +433,12 @@ export function CoachView({
               <p>{tr('Looking through our records…')}</p>
             </div>
           )}
-          <div ref={bottom} />
         </div>
+        {compact && pending > 0 && (
+          <button type="button" className="text-button chat-review" onClick={showReview}>
+            {tr('Review suggestions')} ({pending})<ChevronRight size={16} />
+          </button>
+        )}
         <form
           className="chat-composer"
           onSubmit={(e) => {
@@ -385,6 +447,7 @@ export function CoachView({
           }}
         >
           <textarea
+            ref={composer}
             aria-label={tr('Message the money coach')}
             rows={2}
             maxLength={4000}
@@ -392,7 +455,7 @@ export function CoachView({
             onChange={(e) => setChat(e.target.value)}
             placeholder={tr('Ask anything about our money…')}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 send(chat);
               }
@@ -406,7 +469,7 @@ export function CoachView({
           {tr('Suggestions become review drafts. You decide what gets saved.')}
         </p>
       </section>
-      <aside className="coach-side">
+      <aside className="coach-side" hidden={compact}>
         <div className="panel">
           <h3>{tr('My conversation')}</h3>
           <p>

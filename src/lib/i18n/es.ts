@@ -592,6 +592,12 @@ biweekly|cada dos semanas
 monthly|cada mes
 local|local
 cloud|en la nube
+Chat|Chat
+Open money chat|Abrir chat financiero
+Minimize chat|Minimizar chat
+Expand chat|Ampliar chat
+Connect assistant|Conectar asistente
+Connect an AI model to start chatting.|Conecta un modelo de IA para empezar a conversar.
 `;
 export const es: Record<string, string> = Object.fromEntries(
   pairs

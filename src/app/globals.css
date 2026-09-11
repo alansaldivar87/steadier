@@ -1513,6 +1513,131 @@ progress::-webkit-progress-value {
   font-size: 0.8rem;
   margin-top: 0.75rem;
 }
+.coach-host[hidden],
+.coach-side[hidden] {
+  display: none;
+}
+.chat-launcher {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 71;
+  height: 60px;
+  border-radius: 999px;
+  padding: 0 22px;
+  border: 2px solid var(--paper);
+  box-shadow: 0 5px 24px #163c3533;
+}
+.chat-launcher span {
+  font-size: 16px;
+}
+.coach-dock {
+  position: fixed;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: calc(max(20px, env(safe-area-inset-bottom)) + 74px);
+  width: min(430px, calc(100% - 32px));
+  height: min(650px, calc(100dvh - 118px - env(safe-area-inset-bottom) - env(safe-area-inset-top)));
+  z-index: 70;
+  border-radius: 18px;
+  box-shadow:
+    0 16px 64px #163c3533,
+    0 2px 8px #163c351a;
+}
+.coach-dock .coach-layout {
+  display: block;
+  height: 100%;
+}
+.coach-dock .chat-panel {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  border-radius: 18px;
+}
+.coach-dock .chat-top {
+  padding: 14px;
+  gap: 10px;
+  flex-shrink: 0;
+  background: #f4f8f1;
+}
+.coach-dock .coach-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+}
+.chat-window-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+.chat-window-actions .icon-button {
+  width: 40px;
+  height: 44px;
+  padding: 8px;
+}
+.coach-dock .chat-messages {
+  min-height: 0;
+  padding: 16px;
+  overscroll-behavior: contain;
+}
+.coach-dock .coach-welcome {
+  padding: 0;
+}
+.coach-dock .coach-welcome > .icon-circle {
+  display: none;
+}
+.coach-dock .coach-welcome h2 {
+  margin-top: 14px;
+  font-size: 23px;
+}
+.coach-dock .chat-composer {
+  flex-shrink: 0;
+}
+.coach-dock .chat-composer textarea {
+  font-size: 16px;
+}
+.coach-dock .chat-footnote {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.chat-connect {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.chat-connect p {
+  color: var(--ink);
+  font-size: 14px;
+}
+.chat-review {
+  flex-shrink: 0;
+  font-size: 14px;
+}
+.shell > main > footer {
+  padding-bottom: 80px;
+}
+@media (max-width: 480px) {
+  .chat-launcher {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    padding: 0;
+    width: 60px;
+  }
+  .chat-launcher span {
+    display: none;
+  }
+  .coach-dock {
+    right: 12px;
+    width: calc(100% - 24px);
+    bottom: calc(max(16px, env(safe-area-inset-bottom)) + 72px);
+    height: min(
+      650px,
+      calc(100dvh - 108px - env(safe-area-inset-bottom) - env(safe-area-inset-top))
+    );
+  }
+}
 @media (max-width: 650px) {
   .header-right .pill {
     display: none;
