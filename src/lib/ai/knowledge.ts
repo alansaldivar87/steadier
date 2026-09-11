@@ -1,5 +1,19 @@
 export const knowledge = [
   {
+    id: 'emergency-cushion',
+    title: 'Start an emergency cushion that fits your situation',
+    path: 'https://www.consumerfinance.gov/an-essential-guide-to-building-an-emergency-fund/',
+    source: 'CFPB · checked 2026-09-11',
+    text: 'Emergency savings help with unexpected expenses. Even a small reserve can help; the amount should reflect the household’s circumstances rather than a universal target. Track income and bill timing, choose a specific goal, and check progress. Do not move money automatically when it could leave insufficient cash for bills. In Steadier, a savings goal is a stated target and progress amount, not an actual transfer or a reserved cash balance.',
+  },
+  {
+    id: 'daily-workspace',
+    title: 'Use the daily money tools',
+    path: 'internal:daily-workspace',
+    source: 'Steadier application rules',
+    text: 'Today offers quick expense and earned-income entry, document upload, a money check-in and a one-time purchase check. If a bill or payday is already in the calendar, mark it Paid or Received there to link the ledger and calendar rather than counting it twice. The purchase check subtracts an additional purchase today from the lowest projected 30-day cash balance and protected buffer. Do not include an already recorded or scheduled purchase again. It does not evaluate credit or recurring purchase affordability. The roadmap is educational, not a credit score or proof that debt is paid off. Zero recorded debts does not establish that someone is debt-free.',
+  },
+  {
     id: 'vivienda-es',
     title: 'Ayuda en español para la hipoteca y la vivienda',
     path: 'https://www.consumerfinance.gov/es/vivienda/inseguridad-habitacional/asistencia-hipotecas-y-viviendas/',

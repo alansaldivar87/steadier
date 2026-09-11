@@ -592,6 +592,188 @@ biweekly|cada dos semanas
 monthly|cada mes
 local|local
 cloud|en la nube
+Money|Dinero
+Plan|Plan
+Main navigation|Navegación principal
+MY MONEY, MADE CLEAR|MI DINERO, MÁS CLARO
+Small steps. Real progress.|Pequeños pasos. Avances reales.
+Set up shared access in Household|Configura el acceso compartido en Hogar
+Household settings|Configuración del hogar
+Suggestions to review|Sugerencias por revisar
+Sign out|Cerrar sesión
+Get a clear picture|Conoce tu situación
+Start with one cash account. Add paydays, bills, debt payments, and everyday essentials. Confirm each list when it is complete.|Empieza con una cuenta de efectivo. Agrega días de pago, cuentas, pagos de deuda y gastos esenciales. Confirma cada lista cuando esté completa.
+Continue setup|Continuar configuración
+Protect the essentials|Protege lo esencial
+Keep housing, food, utilities, and getting to work visible. If a payment is late, collect its deadline and ask the provider about options.|Ten presentes la vivienda, la comida, los servicios y el transporte al trabajo. Si un pago está atrasado, anota la fecha límite y pregunta al proveedor qué opciones hay.
+See bills and next steps|Ver cuentas y siguientes pasos
+Create breathing room|Crea un colchón
+Choose a small cash buffer that fits your situation. A savings goal tracks your progress; it does not move money or reserve cash by itself.|Elige un pequeño colchón de efectivo según tu situación. Una meta de ahorro permite seguir tu avance; no mueve ni aparta dinero por sí sola.
+Set a savings goal|Crear una meta de ahorro
+Emergency cushion|Colchón para emergencias
+Pay down debt with a plan|Reduce tus deudas con un plan
+Once urgent terms are clear, compare interest-first and smallest-balance-first plans. An extra payment should still leave enough for essentials and your buffer.|Cuando conozcas las condiciones urgentes, compara pagar primero la deuda con más interés o la de menor saldo. Un pago extra debe dejar suficiente para lo esencial y tu colchón.
+Compare debt plans|Comparar planes de deuda
+Build your next chapter|Construye tu siguiente etapa
+Keep your emergency plan current, then set longer-term goals. Ask the coach to help you understand retirement benefits and investment basics before choosing a product.|Mantén al día tu plan para emergencias y define metas a largo plazo. Pide ayuda al asistente para entender los beneficios de retiro y lo básico de las inversiones antes de elegir un producto.
+Plan my next chapter|Planear mi siguiente etapa
+Help me plan longer-term savings goals. First check what information you need about my situation.|Ayúdame a planear metas de ahorro a largo plazo. Primero revisa qué información necesitas sobre mi situación.
+Give your housing deadline attention first.|Atiende primero el plazo de tu vivienda.
+An overdue housing payment or mortgage needs a clear next step. Gather the notice, amount, and contact details.|Un pago de vivienda o hipoteca atrasado necesita un siguiente paso claro. Reúne el aviso, el monto y los datos de contacto.
+Open housing steps|Ver pasos para la vivienda
+A tight spot is coming. Let’s plan for it.|Se acerca un momento ajustado. Vamos a planearlo.
+Listed bills and income show a possible cash shortfall. Review the dates and essentials before adding spending.|Las cuentas e ingresos registrados muestran una posible falta de efectivo. Revisa las fechas y los gastos esenciales antes de gastar más.
+Review the cash forecast|Revisar el pronóstico de efectivo
+Start with the account that pays your bills.|Empieza con la cuenta con la que pagas tus gastos.
+One starting balance gives us a place to begin. You can bring in the rest a little at a time.|Un saldo inicial nos da por dónde empezar. Puedes agregar lo demás poco a poco.
+Add my first account|Agregar mi primera cuenta
+When does money come in next?|¿Cuándo vuelve a entrar dinero?
+Add take-home pay and its date. If income changes, use your best current estimate and update it.|Agrega el sueldo que recibes después de descuentos y su fecha. Si cambia, usa tu mejor estimación actual y actualízala.
+Add a payday|Agregar un día de pago
+Let’s put the essentials on the calendar.|Anotemos lo esencial en el calendario.
+Include housing, utilities, food, transport, debt minimums, and automatic withdrawals.|Incluye vivienda, servicios, comida, transporte, pagos mínimos y retiros automáticos.
+Add a bill|Agregar una cuenta por pagar
+Turn your documents into reliable records.|Convierte tus documentos en registros confiables.
+Check suggested amounts and accounts before they become part of your ledger.|Revisa los montos y las cuentas sugeridas antes de agregarlos a tus registros.
+Review documents|Revisar documentos
+A balance needs a closer look.|Un saldo necesita revisión.
+A statement and your ledger disagree. Review the difference before relying on the forecast.|Un estado de cuenta y tus registros no coinciden. Revisa la diferencia antes de confiar en el pronóstico.
+Check balances|Comprobar saldos
+Is your starting picture complete?|¿Ya está completa tu información inicial?
+Confirm your account list after adding all the balances you want the plan to include.|Confirma tu lista de cuentas después de agregar todos los saldos que el plan debe incluir.
+Confirm my setup|Confirmar mi información
+Your next step: a quick money check-in.|Tu siguiente paso: una revisión rápida de tu dinero.
+Review recent spending, upcoming bills, and anything waiting for your approval.|Revisa tus gastos recientes, los próximos pagos y lo que espera tu aprobación.
+Review my ledger|Revisar mis movimientos
+Review new documents|Revisar documentos nuevos
+Imports and files waiting for attention.|Registros importados y archivos por revisar.
+Give spending a category|Clasificar los gastos
+Unsorted purchases and refunds.|Compras y reembolsos sin clasificar.
+Check upcoming payments|Revisar próximos pagos
+Listed outflows through the next payday, or seven days.|Salidas registradas hasta el próximo día de pago, o en siete días.
+Compare balances|Comparar saldos
+Differences found in saved statement checks.|Diferencias en las comprobaciones de estados de cuenta.
+Your money. One step at a time.|Tu dinero. Un paso a la vez.
+What matters today, and what to do next.|Lo que importa hoy y qué hacer después.
+My roadmap|Mi camino
+Quick actions|Acciones rápidas
+I spent money|Gasté dinero
+I got paid|Recibí dinero
+Uploading…|Subiendo…
+Scan or upload|Escanear o subir
+Ask my coach|Pedir ayuda
+YOUR NEXT MOVE|TU SIGUIENTE PASO
+Starting picture|Información inicial
+See what is missing|Ver qué falta
+Money at a glance|Tu dinero de un vistazo
+Cash recorded today|Efectivo registrado hoy
+Checking, savings, and cash. Credit is separate.|Cheques, ahorros y efectivo. El crédito va por separado.
+Add a cash account to begin.|Agrega una cuenta de efectivo para empezar.
+Outflows through payday|Salidas hasta el día de pago
+Outflows in the next 7 days|Salidas en los próximos 7 días
+Next listed payday: {date}|Próximo día de pago registrado: {date}
+No payday listed in the next 30 days.|No hay un día de pago registrado en los próximos 30 días.
+Room after bills and buffer|Disponible después de pagos y colchón
+Let’s finish the picture|Completemos la información
+Missing facts stay unknown. No guessed spending limit.|Lo que falta sigue sin conocerse. Sin inventar límites de gasto.
+Lowest estimated room over 30 days; not a guarantee.|El menor disponible estimado en 30 días; no es una garantía.
+BEFORE YOU BUY|ANTES DE COMPRAR
+Does this fit my plan?|¿Esta compra cabe en mi plan?
+Try an extra purchase today that is not already in your ledger or calendar.|Prueba una compra extra de hoy que aún no esté en tus registros o calendario.
+Purchase amount|Monto de la compra
+Enter a positive dollar amount.|Escribe un monto mayor que cero.
+A few facts are still missing.|Todavía faltan algunos datos.
+It fits the current estimate.|Cabe en la estimación actual.
+This would use money your plan needs.|Usaría dinero que tu plan necesita.
+Complete the missing information before using a spending estimate.|Completa la información que falta antes de usar una estimación de gasto.
+Room after this purchase and your buffer: {amount}|Disponible después de esta compra y tu colchón: {amount}
+What to check|Qué revisar
+One-time cash estimate for 30 days. Nothing is saved or spent.|Estimación de una compra en efectivo para 30 días. No se guarda ni se gasta nada.
+Enter an amount to see how it affects your breathing room.|Escribe un monto para ver cómo afecta tu dinero disponible.
+A SMALL WEEKLY HABIT|UN PEQUEÑO HÁBITO SEMANAL
+Your money check-in|Tu revisión de dinero
+A few minutes to catch missing entries and avoid surprises.|Unos minutos para detectar registros faltantes y evitar sorpresas.
+Update older debt balances|Actualizar saldos de deuda antiguos
+Coming up next|Lo que viene
+Full plan|Ver plan
+Add your next payday and the bills due before it.|Agrega tu próximo día de pago y las cuentas que vencen antes.
+Add to calendar|Agregar al calendario
+This month, so far|Lo que va del mes
+Open ledger|Ver movimientos
+Everyday spending, after refunds|Gastos diarios, menos reembolsos
+Borrowed money|Dinero prestado
+Loan repayments|Pagos de préstamos
+Confirmed entries only. Transfers and card payments are separate, so purchases are counted once.|Solo registros confirmados. Las transferencias y los pagos de tarjeta van aparte; cada compra se cuenta una sola vez.
+Set spending targets|Fijar límites de gasto
+Worried about housing or an overdue bill?|¿Te preocupa la vivienda o un pago atrasado?
+Keep the notice, deadline, and next call together. You can start before everything else is organized.|Guarda juntos el aviso, la fecha límite y la próxima llamada. Puedes empezar antes de organizar todo lo demás.
+Get organized|Organizarme
+Finish connecting your workspace|Termina de conectar tu espacio
+AI chat|Chat de IA
+Receipt reader|Lector de recibos
+Google sign-in and shared hosting|Acceso con Google y alojamiento compartido
+Set up|Configurar
+Your roadmap, at your pace|Tu camino, a tu ritmo
+These are tools to return to, not a score or a race. You can work on more than one at a time.|Son herramientas a las que puedes volver, no una calificación ni una carrera. Puedes trabajar en varias a la vez.
+Learn more: CFPB money guides|Más información: guías de dinero del CFPB
+Just the basics. You can add details later.|Solo lo básico. Puedes agregar detalles después.
+Money you earned. For a loan or cash advance, use the detailed form.|Dinero que ganaste. Para un préstamo o adelanto, usa el formulario detallado.
+For example: groceries at the supermarket|Por ejemplo: compra del supermercado
+For example: my paycheck|Por ejemplo: mi sueldo
+Not sure? Leave it Unsorted and decide during your check-in.|¿No estás seguro? Déjalo sin clasificar y decide durante tu revisión.
+Save entry|Guardar registro
+Transfer, borrowed money, or more details|Transferencia, dinero prestado o más detalles
+Entry saved. Your balances are updated.|Registro guardado. Tus saldos están actualizados.
+Income|Ingresos
+Groceries|Supermercado
+Transport|Transporte
+Eating out|Comidas fuera
+Home|Hogar
+Health|Salud
+Unsorted|Sin clasificar
+Your ledger|Tus movimientos
+Every confirmed entry, easy to find.|Cada registro confirmado, fácil de encontrar.
+Quick entry|Registro rápido
+Search a store, note, or category|Buscar tienda, nota o categoría
+Activity type|Tipo de movimiento
+All activity|Todos los movimientos
+Transfers / card payments|Transferencias / pagos de tarjeta
+Refunds|Reembolsos
+Unsorted spending|Gastos sin clasificar
+Accounts and dates|Cuentas y fechas
+Account|Cuenta
+All accounts|Todas las cuentas
+From|Desde
+Through|Hasta
+Show all entries|Ver todos los registros
+Earned|Ganado
+Spent, after refunds|Gastado, menos reembolsos
+Borrowed|Prestado
+{count} matching entries|{count} registros encontrados
+Totals follow your filters. Transfers are excluded from spending.|Los totales siguen tus filtros. Las transferencias no cuentan como gastos.
+The start date must come before the end date.|La fecha inicial debe ser anterior a la final.
+Future entry|Registro futuro
+No entries match these filters.|Ningún registro coincide con estos filtros.
+Your first entry starts the story.|Tu primer registro es el comienzo.
+Try a different date, account, or search.|Prueba otra fecha, cuenta o búsqueda.
+Add a purchase, record income, or review an uploaded statement.|Agrega una compra, registra un ingreso o revisa un estado de cuenta que hayas subido.
+Add entry|Agregar registro
+Show more entries|Ver más registros
+Money sections|Secciones de dinero
+Ledger|Movimientos
+Accounts|Cuentas
+Debts|Deudas
+Budgets & goals|Límites y metas
+Preparing a money check-in|Preparando tu revisión de dinero
+Checking a purchase|Revisando una compra
+Already on your calendar? Record it as paid or received there so it is not counted twice.|¿Ya está en tu calendario? Márcalo como pagado o recibido allí para no contarlo dos veces.
+Open calendar|Abrir calendario
+Is every payday on your list?|¿Incluiste todos los días de pago?
+Review the income dates and amounts you have added. Confirm the list in Household only when it includes everything.|Revisa las fechas y los montos de ingreso que agregaste. Confirma la lista en Hogar solo cuando incluya todo.
+Review and confirm|Revisar y confirmar
+Any date|Cualquier fecha
+Have you included every essential payment?|¿Incluiste todos los pagos esenciales?
+Check bills, food, transport, debt minimums, and automatic withdrawals. Confirm the list in Household when it is complete.|Revisa cuentas, comida, transporte, pagos mínimos y retiros automáticos. Confirma la lista en Hogar cuando esté completa.
 Chat|Chat
 Open money chat|Abrir chat financiero
 Minimize chat|Minimizar chat

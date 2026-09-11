@@ -1,33 +1,26 @@
 'use client';
 import { useI18n, LanguageSwitcher } from './i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { signOut } from 'next-auth/react';
+import Navigation, { sectionTitles as titles, type Section } from './navigation';
+import TodayView, { type MoneyTab } from './today-view';
+import QuickEntry from './quick-entry';
 import {
-  ArrowUpRight,
-  ArrowRight,
-  Camera,
-  Home,
   MessageCircle,
   Plus,
-  Wallet,
-  Target,
   Settings,
   Check,
-  FileText,
   ChevronRight,
   RefreshCw,
   AlertCircle,
-  LogOut,
   X,
 } from 'lucide-react';
 import { Draft } from '@/lib/domain';
 import RecordForm, { defaults } from './record-form';
 import Dialog from './dialog';
 import { api, optimizePhoto, type Snapshot, type EditableKind, type Entity } from './client-utils';
-import { Empty } from './shared';
 import { MoneyView, PlanView } from './money-views';
 import { DocumentsView, CoachView, SettingsView } from './other-views';
-type Section = 'today' | 'money' | 'plan' | 'documents' | 'coach' | 'settings';
+
 type Editing = {
   requestId?: string;
   kind: EditableKind;
@@ -36,27 +29,14 @@ type Editing = {
   revision?: number;
   draft?: Draft;
 };
-const titles: Record<Section, string> = {
-  today: 'Today',
-  money: 'Our money',
-  plan: 'Our plan',
-  documents: 'Documents',
-  coach: 'Money coach',
-  settings: 'Household',
-};
-const icons = {
-  today: Home,
-  money: Wallet,
-  plan: Target,
-  documents: FileText,
-  coach: MessageCircle,
-  settings: Settings,
-};
 export default function Dashboard() {
-  const { tr, money, dateLabel, locale } = useI18n();
+  const { tr } = useI18n();
   const [s, setS] = useState<Snapshot | null>(null),
     [section, setSection] = useState<Section>('today'),
     [chatOpen, setChatOpen] = useState(false),
+    [moneyTab, setMoneyTab] = useState<MoneyTab>('ledger'),
+    [quickType, setQuickType] = useState<'expense' | 'income' | null>(null),
+    [chatPrompt, setChatPrompt] = useState<{ id: string; text: string } | null>(null),
     [error, setError] = useState(''),
     [toast, setToast] = useState(''),
     [editing, setEditing] = useState<Editing | null>(null),
@@ -216,18 +196,7 @@ export default function Dashboard() {
         )}
       </div>
     );
-  const { data, forecast: f, connections } = s;
-  const pending = data.drafts.filter((d) => d.status === 'pending');
-  const urgentHousing =
-    data.debts.some(
-      (d) =>
-        d.kind === 'mortgage' && (d.pastDueCents > 0 || ['late', 'forbearance'].includes(d.status)),
-    ) || data.tasks.some((t) => t.urgent && !t.done);
-  const setupCount = [
-    data.settings.accountsComplete,
-    data.settings.incomeComplete,
-    data.settings.billsComplete,
-  ].filter(Boolean).length;
+  const { data } = s;
   const edit = (kind: EditableKind, item: Entity) => {
     setAllowDuplicate(false);
     setEditing({
@@ -243,6 +212,24 @@ export default function Dashboard() {
     setAllowDuplicate(false);
     setEditing({ kind: d.kind as EditableKind, data: d.data, draft: d });
   };
+  function navigate(next: Section, tab?: MoneyTab) {
+    setSection(next);
+    if (tab) setMoneyTab(tab);
+    if (next === 'coach') setChatOpen(false);
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  function quick(type: 'expense' | 'income') {
+    if (!data.accounts.length) {
+      start('account');
+      return;
+    }
+    setQuickType(type);
+  }
+  function ask(text?: string) {
+    if (text) setChatPrompt({ id: crypto.randomUUID(), text });
+    setChatOpen(true);
+  }
   const heading = {
     today: data.accounts.length
       ? tr('Let’s take the next step.')
@@ -263,78 +250,35 @@ export default function Dashboard() {
   }[section];
   return (
     <div className="shell">
-      <aside className="sidebar">
-        <a className="brand" href="/">
-          s<span>steadier</span>
-          <i>●</i>
-        </a>
-        <div className="household">
-          {(data.settings.name === 'Our household'
-            ? tr('Our household')
-            : data.settings.name
-          ).toUpperCase()}
-          <br />
-          <strong>{tr('A little clearer, together.')}</strong>
-        </div>
-        <nav>
-          {(Object.keys(titles) as Section[]).map((key) => {
-            const Icon = icons[key];
-            return (
-              <button
-                key={key}
-                className={section === key ? 'active' : ''}
-                onClick={() => {
-                  setSection(key);
-                  if (key === 'coach') setChatOpen(false);
-                  setError('');
-                }}
-              >
-                <Icon size={19} />
-                {tr(titles[key])}
-                {key === 'documents' && pending.length > 0 && (
-                  <b className="nav-count">{pending.length}</b>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="sidebar-note">
-          {tr('ONE STEP AT A TIME')}
-          <p>{tr('You don’t have to figure it all out today.')}</p>
-          <div className="member">
-            <span>{s.member.name.charAt(0)}</span>
-            <div>
-              {s.member.local ? tr('Local workspace') : s.member.name}
-              <small>
-                {s.member.local ? tr('Google connection pending') : tr('Household member')}
-              </small>
-            </div>
-          </div>
-          {!s.member.local && (
-            <button className="text-button" onClick={() => signOut({ callbackUrl: '/login' })}>
-              <LogOut size={14} />
-              {tr(' Sign out')}
-            </button>
-          )}
-        </div>
-      </aside>
+      <Navigation section={section} navigate={navigate} s={s} />
       <main>
-        <header>
-          <span>
-            {data.settings.name === 'Our household' ? tr('Our household') : data.settings.name} /{' '}
-            {tr(titles[section])}
-          </span>
+        <header className="workspace-topbar">
+          <a className="mobile-wordmark" href="/" aria-label="Steadier">
+            <b>s</b>steadier
+          </a>
+          <div className="topbar-location">
+            <span>
+              {data.settings.name === 'Our household' ? tr('Our household') : data.settings.name}
+            </span>
+            <strong>{tr(titles[section])}</strong>
+          </div>
           <div className="header-right">
             <LanguageSwitcher />
-            <span className="pill">
-              {s.member.local ? tr('Local workspace') : tr('Shared household')}
-            </span>
             <button
-              className="icon-button"
+              className="icon-button refresh-button"
               aria-label={tr('Refresh household')}
               onClick={() => action(refresh, tr('Up to date.'))}
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={18} />
+            </button>
+            <button
+              className={
+                'icon-button settings-shortcut ' + (section === 'settings' ? 'active' : '')
+              }
+              aria-label={tr('Household settings')}
+              onClick={() => navigate('settings')}
+            >
+              <Settings size={20} />
             </button>
           </div>
         </header>
@@ -376,242 +320,41 @@ export default function Dashboard() {
             e.target.value = '';
           }}
         />
-        <div className="page-heading">
-          <div>
-            <div className="eyebrow">
-              {section === 'today'
-                ? tr('LET’S MAKE ROOM TO BREATHE')
-                : section === 'coach'
+        {section !== 'today' && (
+          <div className="page-heading">
+            <div>
+              <div className="eyebrow">
+                {section === 'coach'
                   ? tr('A LITTLE HELP, WITHOUT THE JUDGMENT')
                   : tr('ONE HOUSEHOLD. ONE CLEARER PICTURE.')}
+              </div>
+              <h1>{tr(heading)}</h1>
+              <p>{tr(subheading)}</p>
             </div>
-            <h1>{tr(heading)}</h1>
-            <p>{tr(subheading)}</p>
+            <button onClick={() => setShowAdd(true)}>
+              <Plus size={18} />
+              {tr(' Add something')}
+            </button>
           </div>
-          <button onClick={() => setShowAdd(true)}>
-            <Plus size={18} />
-            {tr(' Add something')}
-          </button>
-        </div>
-        {section === 'today' && (
-          <>
-            <section className="hero-grid">
-              <div className="focus-card">
-                <div className="eyebrow">{tr('YOUR NEXT SMALL STEP')}</div>
-                <h2>
-                  {urgentHousing ? (
-                    <>
-                      {tr('Give your home')}
-                      <br />
-                      {tr('the first bit of attention.')}
-                    </>
-                  ) : !data.accounts.length ? (
-                    <>
-                      {tr('Start with the account')}
-                      <br />
-                      {tr('that pays your bills.')}
-                    </>
-                  ) : setupCount < 3 ? (
-                    <>
-                      {tr('Let’s fill in')}
-                      <br />
-                      {tr('the next piece.')}
-                    </>
-                  ) : (
-                    <>
-                      {tr('Your money plan,')}
-                      <br />
-                      {tr('one day at a time.')}
-                    </>
-                  )}
-                </h2>
-                <p>
-                  {urgentHousing
-                    ? tr(
-                        'Keep your latest notice, servicer contact, and agreement deadline together.',
-                      )
-                    : !data.accounts.length
-                      ? tr(
-                          'Add its opening balance, then your next payday. That gives us a starting point.',
-                        )
-                      : (f.missing[0] ? tr(f.missing[0]) : '') ||
-                        tr('Your next 30 days are mapped out from the records you’ve confirmed.')}
-                </p>
-                <button
-                  onClick={() =>
-                    urgentHousing
-                      ? setSection('plan')
-                      : !data.accounts.length
-                        ? start('account')
-                        : setSection(setupCount < 3 ? 'settings' : 'plan')
-                  }
-                >
-                  {urgentHousing
-                    ? tr('Open our housing steps')
-                    : !data.accounts.length
-                      ? tr('Add our first account')
-                      : setupCount < 3
-                        ? tr('Continue our setup')
-                        : tr('Look at our plan')}
-                  <ArrowUpRight size={18} />
-                </button>
-                <div className="steps">
-                  <b>01</b>
-                  <span>{tr('Find our footing')}</span>
-                  <i />
-                  <span>{tr('Make a plan')}</span>
-                  <i />
-                  <span>{tr('Build breathing room')}</span>
-                </div>
-              </div>
-              <div className="capture-card">
-                <span className="icon-circle">
-                  <Camera />
-                </span>
-                <h2>
-                  {tr('Spent something?')}
-                  <br />
-                  {tr('Just capture it.')}
-                </h2>
-                <p>{tr('A photo, a statement, or a quick message. Start wherever is easiest.')}</p>
-                <button
-                  className="secondary"
-                  disabled={uploading}
-                  onClick={() => photoInput.current?.click()}
-                >
-                  <Camera size={18} />
-                  {uploading ? tr('Saving photo…') : tr('Take a photo')}
-                </button>
-                <button
-                  className="text-button"
-                  disabled={uploading}
-                  onClick={() => fileInput.current?.click()}
-                >
-                  {tr('Upload a statement ')}
-                  <ArrowUpRight size={16} />
-                </button>
-                <button className="text-button" onClick={() => start('transaction')}>
-                  {tr('Or type it in ')}
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </section>
-            <section className="metrics">
-              <article>
-                <span>{tr('Cash we can use')}</span>
-                <strong>{data.accounts.length ? money(f.cashCents) : tr('Let’s find out')}</strong>
-                <small>
-                  {data.accounts.length
-                    ? tr('From confirmed cash accounts')
-                    : tr('Add checking and savings balances')}
-                </small>
-              </article>
-              <article>
-                <span>{tr('Available to plan · next 30 days')}</span>
-                <strong>
-                  {f.spendableCents === null
-                    ? tr('Still gathering the picture')
-                    : money(f.spendableCents)}
-                </strong>
-                <small>
-                  {f.shortfallCents
-                    ? tr('{amount} projected shortfall', { amount: money(f.shortfallCents) })
-                    : f.spendableCents === null
-                      ? tr('Confirm the missing pieces first')
-                      : tr('After listed payments and our buffer')}
-                </small>
-              </article>
-              <article>
-                <span>{tr('Our total debt')}</span>
-                <strong>{data.debts.length ? money(f.totalDebtCents) : tr('One at a time')}</strong>
-                <small>
-                  {data.debts.length
-                    ? tr('Latest recorded debt balances')
-                    : tr('Start with the most urgent account')}
-                </small>
-              </article>
-            </section>
-            <div className="two-columns">
-              <section className="panel">
-                <div className="section-title">
-                  <h2>{tr('Coming up next')}</h2>
-                  <button className="text-button" onClick={() => setSection('plan')}>
-                    {tr('Our calendar ')}
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-                {f.events.length ? (
-                  f.events.slice(0, 5).map((e, i) => (
-                    <div className="list-row" key={e.id + i}>
-                      <span className="date-tile">{dateLabel(e.date)}</span>
-                      <div className="grow">
-                        <strong>{e.name}</strong>
-                        <p>
-                          {e.amountCents > 0 ? tr('Money coming in') : tr('Set this money aside')}
-                        </p>
-                      </div>
-                      <b className={e.amountCents > 0 ? 'positive' : ''}>{money(e.amountCents)}</b>
-                    </div>
-                  ))
-                ) : (
-                  <Empty
-                    title={tr('No surprises, once we add them.')}
-                    text={tr('Add your next payday and the bills due before it.')}
-                    action={() => start('obligation')}
-                    label={tr('Add a bill or payday')}
-                  />
-                )}
-              </section>
-              <section className="panel housing-panel">
-                <span className="pill warm">{tr('HOUSING FIRST')}</span>
-                <h2>{tr('First, protect the essentials.')}</h2>
-                <p>
-                  {tr(
-                    'If a housing payment is overdue, contact your servicer now. Keep their deadlines and next steps here.',
-                  )}
-                </p>
-                <button
-                  className="secondary"
-                  onClick={() => {
-                    setSection('plan');
-                    start('task', {
-                      title: tr('Contact mortgage servicer about repayment options'),
-                      urgent: true,
-                    });
-                  }}
-                >
-                  {tr('Add a housing step ')}
-                  <ArrowRight size={16} />
-                </button>
-                <a
-                  className="inline-link"
-                  href="https://www.consumerfinance.gov/find-a-housing-counselor/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {tr('Find a U.S. housing counselor ')}
-                  <ArrowUpRight size={16} />
-                </a>
-              </section>
-            </div>
-            {pending.length > 0 && (
-              <section className="panel">
-                <div className="section-title">
-                  <h2>
-                    {pending.length}
-                    {tr(' new items to check')}
-                  </h2>
-                  <button onClick={() => setSection('documents')}>
-                    {tr('Review imports ')}
-                    <ChevronRight size={17} />
-                  </button>
-                </div>
-                <p>{tr('Help the coach turn receipts and statements into reliable records.')}</p>
-              </section>
-            )}
-          </>
         )}
-        {section === 'money' && <MoneyView {...viewProps} />}
+        {section === 'today' && (
+          <TodayView
+            {...viewProps}
+            navigate={navigate}
+            quick={quick}
+            capture={() => fileInput.current?.click()}
+            uploading={uploading}
+            ask={ask}
+          />
+        )}
+        {section === 'money' && (
+          <MoneyView
+            {...viewProps}
+            tab={moneyTab}
+            setTab={setMoneyTab}
+            quick={() => quick('expense')}
+          />
+        )}
         {section === 'plan' && (
           <PlanView
             {...viewProps}
@@ -647,6 +390,7 @@ export default function Dashboard() {
         >
           <CoachView
             {...viewProps}
+            suggestion={chatPrompt}
             visible={section === 'coach' || chatOpen}
             compact={section !== 'coach'}
             onClose={closeChat}
@@ -688,6 +432,30 @@ export default function Dashboard() {
           )}
           <span>{tr('Chat')}</span>
         </button>
+      )}
+      {quickType && (
+        <Dialog
+          title={tr(quickType === 'expense' ? 'I spent money' : 'I got paid')}
+          onClose={() => setQuickType(null)}
+        >
+          <QuickEntry
+            s={s}
+            type={quickType}
+            calendar={() => {
+              setQuickType(null);
+              navigate('plan');
+            }}
+            onSaved={async () => {
+              await refresh();
+              setQuickType(null);
+              setToast(tr('Entry saved. Your balances are updated.'));
+            }}
+            advanced={(preset) => {
+              setQuickType(null);
+              start('transaction', preset);
+            }}
+          />
+        </Dialog>
       )}
       {showAdd && (
         <Dialog title={tr('What would you like to add?')} onClose={() => setShowAdd(false)}>

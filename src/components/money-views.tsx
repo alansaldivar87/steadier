@@ -17,15 +17,40 @@ import { accountBalance, payoff, occurrences } from '@/lib/finance';
 import { dollarsToCents, Obligation, HouseholdData } from '@/lib/domain';
 import Dialog from './dialog';
 import MoneyExtras from './money-extras';
+import LedgerView from './ledger-view';
+import type { MoneyTab } from './today-view';
 
-export function MoneyView(props: ViewProps) {
+export function MoneyView(
+  props: ViewProps & { tab: MoneyTab; setTab: (tab: MoneyTab) => void; quick: () => void },
+) {
   const { tr, money, dateLabel, locale } = useI18n();
   const { s, start } = props;
   const { data, today } = s;
-  const [query, setQuery] = useState('');
+
   return (
     <>
-      <section className="panel">
+      <div className="money-tabs" aria-label={tr('Money sections')}>
+        {(
+          [
+            ['ledger', 'Ledger'],
+            ['accounts', 'Accounts'],
+            ['debts', 'Debts'],
+            ['targets', 'Budgets & goals'],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            className={
+              props.tab === id || (props.tab === 'unsorted' && id === 'ledger') ? 'active' : ''
+            }
+            aria-pressed={props.tab === id || (props.tab === 'unsorted' && id === 'ledger')}
+            onClick={() => props.setTab(id)}
+          >
+            {tr(label)}
+          </button>
+        ))}
+      </div>
+      <section className="panel" hidden={props.tab !== 'accounts'}>
         <div className="section-title">
           <h2>{tr('Our accounts')}</h2>
           <button className="secondary small-button" onClick={() => start('account')}>
@@ -55,65 +80,10 @@ export function MoneyView(props: ViewProps) {
           />
         )}
       </section>
-      <section className="panel">
-        <div className="section-title">
-          <h2>{tr('Money in and out')}</h2>
-          <button className="secondary small-button" onClick={() => start('transaction')}>
-            <Plus size={16} />
-            {tr(' Add entry')}
-          </button>
-        </div>
-        <label className="search">
-          <Search size={17} />
-          <input
-            aria-label={tr('Find transactions')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={tr('Find a purchase, account, or category')}
-          />
-        </label>
-        {data.transactions
-          .filter((t) =>
-            `${t.description} ${t.category} ${data.accounts.find((a) => a.id === t.accountId)?.name}`
-              .toLowerCase()
-              .includes(query.toLowerCase()),
-          )
-          .sort((a, b) => b.date.localeCompare(a.date))
-          .map((t) => (
-            <div className="list-row" key={t.id}>
-              <span className="list-icon">
-                <Wallet size={17} />
-              </span>
-              <div className="grow">
-                <strong>{t.description}</strong>
-                <p>
-                  {dateLabel(t.date)} · {data.accounts.find((a) => a.id === t.accountId)?.name} ·{' '}
-                  {t.category}
-                </p>
-                <small>
-                  {tr(t.type)}
-                  {t.type === 'transfer'
-                    ? ' → ' + data.accounts.find((a) => a.id === t.toAccountId)?.name
-                    : ''}
-                </small>
-              </div>
-              <b>{money(t.amountCents)}</b>
-              <RowTools {...props} kind="transaction" item={t} />
-            </div>
-          ))}
-        {!data.transactions.length && (
-          <Empty
-            title={tr('A receipt, a quick entry, a little more clarity.')}
-            text={tr('Your reviewed purchases and income will appear here.')}
-          />
-        )}
-        <p className="help">
-          {tr(
-            'Borrowed money is tracked separately from earnings. A transfer to pay a credit card does not count as a second purchase.',
-          )}
-        </p>
-      </section>
-      <section className="panel">
+      {['ledger', 'unsorted'].includes(props.tab) && (
+        <LedgerView key={props.tab} {...props} unsorted={props.tab === 'unsorted'} />
+      )}
+      <section className="panel" hidden={props.tab !== 'debts'}>
         <div className="section-title">
           <h2>{tr('Everything we owe')}</h2>
           <button className="secondary small-button" onClick={() => start('debt')}>
@@ -168,7 +138,7 @@ export function MoneyView(props: ViewProps) {
           )}
         </p>
       </section>
-      <MoneyExtras {...props} />
+      {props.tab === 'targets' && <MoneyExtras {...props} />}
     </>
   );
 }

@@ -27,6 +27,19 @@ test('MCP negotiates, retrieves, stages proposals, rejects invalid amounts', asy
     assert.ok(!tools.tools.some((t) => /payment|accept_draft/.test(t.name)));
     const snapshot = await client.callTool({ name: 'household_snapshot', arguments: {} });
     assert.equal(snapshot.isError, undefined);
+    const checkin = await client.callTool({ name: 'money_checkin', arguments: {} });
+    assert.equal(checkin.isError, undefined);
+    assert.match(JSON.stringify(checkin), /nextStep/);
+    const purchase = await client.callTool({
+      name: 'check_purchase',
+      arguments: { amountCents: 1000 },
+    });
+    assert.equal(purchase.isError, undefined);
+    assert.match(JSON.stringify(purchase), /unknown/);
+    assert.equal(
+      (await client.callTool({ name: 'check_purchase', arguments: { amountCents: -1 } })).isError,
+      true,
+    );
     const proposal = await client.callTool({
       name: 'propose_expense',
       arguments: {

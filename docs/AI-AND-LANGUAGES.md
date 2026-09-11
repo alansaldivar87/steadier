@@ -25,6 +25,8 @@ The model can call these household-scoped tools:
 
 | Tool                 | Behavior                                                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `money_checkin`      | Return record-based next steps, payday outflows and review counts.                                                                               |
+| `check_purchase`     | Check an additional one-time cash purchase against the 30-day forecast and buffer; withhold estimates when facts are missing.                    |
 | `search_documents`   | Retrieve original source excerpts and explicit preferences in English or Spanish.                                                                |
 | `cash_flow`          | Calculate a 1–90 day forecast and show missing facts.                                                                                            |
 | `spending_summary`   | Total confirmed spending by category, separately from borrowing, transfers and loan repayments.                                                  |

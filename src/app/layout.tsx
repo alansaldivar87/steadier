@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import './workspace.css';
 import { serverLocale } from '@/lib/i18n/server';
 import { LanguageProvider } from '@/components/i18n';
 export const metadata: Metadata = {

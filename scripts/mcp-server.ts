@@ -6,6 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { household, writeRecord, list } from '../src/lib/db';
 import { forecast } from '../src/lib/finance';
+import { moneyGuide, purchaseCheck } from '../src/lib/money-guide';
 import { today } from '../src/lib/domain';
 import { retrieve } from '../src/lib/ai/retrieval';
 import { spendingSummary, balanceChecks, debtComparison } from '../src/lib/ai/financial-tools';
@@ -16,6 +17,32 @@ const server = new McpServer({ name: 'steadier-household', version: '0.1.0' });
 const out = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value) }],
 });
+server.registerTool(
+  'money_checkin',
+  {
+    description:
+      'Read the next actionable money step, upcoming payday, pending reviews and missing categories. Recorded data only.',
+    inputSchema: {},
+    annotations: { readOnlyHint: true },
+  },
+  async () => {
+    const data = await household();
+    return out(moneyGuide(data, today(data.settings.timeZone)));
+  },
+);
+server.registerTool(
+  'check_purchase',
+  {
+    description:
+      'Check an additional one-time cash purchase today against the lowest 30-day cash projection and buffer. Returns unknown with incomplete facts. Does not spend or save anything.',
+    inputSchema: { amountCents: z.number().int().positive().max(100_000_000_000) },
+    annotations: { readOnlyHint: true },
+  },
+  async ({ amountCents }) => {
+    const data = await household();
+    return out(purchaseCheck(data, today(data.settings.timeZone), amountCents));
+  },
+);
 server.registerTool(
   'spending_summary',
   {

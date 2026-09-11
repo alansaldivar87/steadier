@@ -20,4 +20,4 @@ No MCP tool can transfer money, accept an agreement, access Gmail, apply for deb
 
 ## Financial calculation tools
 
-The same deterministic functions used by the in-app assistant are available as `spending_summary`, `compare_debt_plans`, and `check_statement_balances`. They are read-only and household-scoped. Document search expands English/Spanish financial terms. These tools do not send money or confirm drafts.
+The same deterministic functions used by the in-app assistant are available as `spending_summary`, `compare_debt_plans`, `check_statement_balances`, `money_checkin` and `check_purchase`. They are read-only and household-scoped. Document search expands English/Spanish financial terms. These tools do not send money or confirm drafts.

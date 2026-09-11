@@ -13,6 +13,7 @@ Open the local URL printed by Next.js. This checkout has a private `.env.local` 
 
 - [Idiomas, modelos y asistentes / Languages and AI](docs/AI-AND-LANGUAGES.md)
 - [Guía para empezar en español](intake/EMPEZAR-AQUI.md)
+- [Daily workspace and remaining product gaps](docs/DAILY-WORKSPACE.md)
 - [Connection and Vercel setup](docs/SETUP.md)
 - [Start gathering your household documents](intake/START-HERE.md)
 - [Mortgage call worksheet](intake/HOUSING-FIRST.md)

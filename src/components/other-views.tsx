@@ -268,6 +268,7 @@ export function CoachView({
   onClose,
   onExpand,
   showSettings,
+  suggestion,
 }: ViewProps & {
   showReview: () => void;
   visible: boolean;
@@ -275,6 +276,7 @@ export function CoachView({
   onClose: () => void;
   onExpand: () => void;
   showSettings: () => void;
+  suggestion?: { id: string; text: string } | null;
 }) {
   const { tr, money, dateLabel, locale } = useI18n();
   const [messages, setMessages] = useState<Message[]>([]),
@@ -284,6 +286,9 @@ export function CoachView({
   const messageList = useRef<HTMLDivElement>(null);
   const minimizeButton = useRef<HTMLButtonElement>(null);
   const composer = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (suggestion) setChat(suggestion.text);
+  }, [suggestion]);
   useEffect(() => {
     api<Message[]>('/api/chat')
       .then(setMessages)
