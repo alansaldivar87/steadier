@@ -1,7 +1,7 @@
 'use client';
+import { useI18n, LanguageSwitcher } from './i18n';
 import { Pencil, Trash2, Wallet, Plus } from 'lucide-react';
 import { EditableKind, Entity, ViewProps } from './client-utils';
-import { money } from '@/lib/domain';
 export function RowTools({
   kind,
   item,
@@ -13,18 +13,21 @@ export function RowTools({
   edit: ViewProps['edit'];
   remove: ViewProps['remove'];
 }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   return (
     <div className="row-tools">
       <button
         className="icon-button"
-        aria-label={`Edit ${item.name || item.title || item.description}`}
+        aria-label={tr('Edit {name}', { name: item.name || item.title || item.description || '' })}
         onClick={() => edit(kind, item)}
       >
         <Pencil size={16} />
       </button>
       <button
         className="icon-button"
-        aria-label={`Delete ${item.name || item.title || item.description}`}
+        aria-label={tr('Delete {name}', {
+          name: item.name || item.title || item.description || '',
+        })}
         onClick={() => remove(item)}
       >
         <Trash2 size={16} />
@@ -43,14 +46,15 @@ export function Empty({
   action?: () => void;
   label?: string;
 }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   return (
     <div className="empty">
       <Wallet size={25} />
-      <h3>{title}</h3>
-      <p>{text}</p>
+      <h3>{tr(title)}</h3>
+      <p>{tr(text)}</p>
       {action && (
         <button className="secondary small-button" onClick={action}>
-          {label}
+          {label ? tr(label) : ''}
           <Plus size={15} />
         </button>
       )}
@@ -58,6 +62,7 @@ export function Empty({
   );
 }
 export function CashChart({ points }: { points: { date: string; balanceCents: number }[] }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const values = points.map((p) => p.balanceCents);
   const low = Math.min(0, ...values),
     high = Math.max(100, ...values);
@@ -72,7 +77,10 @@ export function CashChart({ points }: { points: { date: string; balanceCents: nu
       <svg
         viewBox="0 0 720 230"
         role="img"
-        aria-label={`Projected end-of-day cash starts at ${money(values[0])} and ends at ${money(values.at(-1)!)}. Lowest end-of-day balance ${money(Math.min(...values))}.`}
+        aria-label={tr(
+          'Projected end-of-day cash starts at {start} and ends at {end}. Lowest end-of-day balance {low}.',
+          { start: money(values[0]), end: money(values.at(-1)!), low: money(Math.min(...values)) },
+        )}
       >
         <polygon points={`${xy[0].split(',')[0]},185 ${xy.join(' ')} 675,185`} fill="#e7f0e4" />
         <line x1="75" x2="675" y1={zero} y2={zero} stroke="#ccd7c8" strokeDasharray="4 4" />
@@ -93,16 +101,18 @@ export function CashChart({ points }: { points: { date: string; balanceCents: nu
           .filter((i) => points[i])
           .map((i) => (
             <text key={i} x={75 + i * (600 / (points.length - 1))} y="220" textAnchor="middle">
-              {points[i].date.slice(5)}
+              {dateLabel(points[i].date)}
             </text>
           ))}
       </svg>
       <div className="chart-caption">
         <span>
-          End of today <b>{money(values[0])}</b>
+          {tr('End of today ')}
+          <b>{money(values[0])}</b>
         </span>
         <span>
-          End of window <b>{money(values.at(-1)!)}</b>
+          {tr('End of window ')}
+          <b>{money(values.at(-1)!)}</b>
         </span>
       </div>
     </div>

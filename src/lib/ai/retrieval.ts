@@ -1,6 +1,7 @@
 import { household } from '../db';
 import { bm25Search, buildIndex, type RagDoc } from './bm25';
 import { knowledge } from './knowledge';
+import { expandQuery } from './query-expansion';
 export async function retrieve(query: string) {
   const data = await household();
   const docs: RagDoc[] = [...knowledge];
@@ -24,5 +25,5 @@ export async function retrieve(query: string) {
       source: `Household preference · ${m.updatedAt}`,
       text: m.text,
     });
-  return bm25Search(buildIndex(docs), query, 6);
+  return bm25Search(buildIndex(docs), expandQuery(query), 6);
 }

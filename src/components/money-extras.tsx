@@ -1,10 +1,11 @@
 'use client';
+import { useI18n, LanguageSwitcher } from './i18n';
 import { Plus } from 'lucide-react';
 import { ViewProps } from './client-utils';
 import { RowTools, Empty } from './shared';
 import { accountBalance } from '@/lib/finance';
-import { money } from '@/lib/domain';
 export default function MoneyExtras(props: ViewProps) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const { data, today } = props.s;
   const month = today.slice(0, 7);
   const thisMonth = data.transactions.filter((t) => t.date.startsWith(month) && t.date <= today);
@@ -22,20 +23,27 @@ export default function MoneyExtras(props: ViewProps) {
     <>
       <section className="panel">
         <div className="section-title">
-          <h2>Our monthly spending plan · {month}</h2>
+          <h2>
+            {tr('Our monthly spending plan · ')}
+            {month}
+          </h2>
           <button className="secondary small-button" onClick={() => props.start('budget')}>
-            <Plus size={16} /> Set a category limit
+            <Plus size={16} />
+            {tr(' Set a category limit')}
           </button>
         </div>
         <div className="month-summary">
           <span>
-            Earned <b>{money(earned)}</b>
+            {tr('Earned ')}
+            <b>{money(earned)}</b>
           </span>
           <span>
-            Everyday spending, less refunds <b>{money(spent)}</b>
+            {tr('Everyday spending, less refunds ')}
+            <b>{money(spent)}</b>
           </span>
           <span>
-            Borrowed <b>{money(borrowed)}</b>
+            {tr('Borrowed ')}
+            <b>{money(borrowed)}</b>
           </span>
         </div>
         {budgets.map((b) => {
@@ -51,17 +59,20 @@ export default function MoneyExtras(props: ViewProps) {
               <div className="grow">
                 <strong>{b.category}</strong>
                 <p>
-                  {money(used)} of {money(b.limitCents)} · {money(Math.max(0, b.limitCents - used))}{' '}
-                  remaining
+                  {money(used)}
+                  {tr(' of ')}
+                  {money(b.limitCents)} · {money(Math.max(0, b.limitCents - used))}{' '}
+                  {tr('remaining')}
                 </p>
                 <progress
-                  aria-label={`${b.category} budget used`}
+                  aria-label={tr('{name} budget used', { name: b.category })}
                   value={Math.max(0, used)}
                   max={Math.max(1, b.limitCents)}
                 />
                 {used > b.limitCents && (
                   <small className="danger">
-                    {money(used - b.limitCents)} over our planned limit
+                    {money(used - b.limitCents)}
+                    {tr(' over our planned limit')}
                   </small>
                 )}
               </div>
@@ -71,21 +82,24 @@ export default function MoneyExtras(props: ViewProps) {
         })}
         {!budgets.length && (
           <Empty
-            title="Give everyday spending a simple limit."
-            text="Start with groceries, fuel, and eating out. You can adjust the plan as you learn."
+            title={tr('Give everyday spending a simple limit.')}
+            text={tr(
+              'Start with groceries, fuel, and eating out. You can adjust the plan as you learn.',
+            )}
           />
         )}
         <p className="help">
-          Category limits track spending; they do not automatically reserve cash. Put expected
-          essentials on the calendar too. Transfers and loan repayments are shown separately from
-          everyday spending.
+          {tr(
+            'Category limits track spending; they do not automatically reserve cash. Put expected essentials on the calendar too. Transfers and loan repayments are shown separately from everyday spending.',
+          )}
         </p>
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Check our statement balances</h2>
+          <h2>{tr('Check our statement balances')}</h2>
           <button className="secondary small-button" onClick={() => props.start('reconciliation')}>
-            <Plus size={16} /> Compare a statement
+            <Plus size={16} />
+            {tr(' Compare a statement')}
           </button>
         </div>
         {data.reconciliations.map((r) => {
@@ -96,41 +110,43 @@ export default function MoneyExtras(props: ViewProps) {
             <div className="list-row" key={r.id}>
               <div className="grow">
                 <strong>
-                  {a?.name || 'Account removed'} · {r.date}
+                  {a?.name || tr('Account removed')} · {dateLabel(r.date)}
                 </strong>
                 <p>
-                  Statement: {money(r.statementBalanceCents)} · Ledger:{' '}
-                  {expected === null ? 'Unknown' : money(expected)}
+                  {tr('Statement: ')}
+                  {money(r.statementBalanceCents)}
+                  {tr(' · Ledger:')} {expected === null ? tr('Unknown') : money(expected)}
                 </p>
                 <span className={'pill ' + (delta ? 'warm' : '')}>
                   {delta === null
-                    ? 'Account missing'
+                    ? tr('Account missing')
                     : delta === 0
-                      ? 'Matches to the cent'
-                      : `${money(delta)} difference to investigate`}
+                      ? tr('Matches to the cent')
+                      : tr('{amount} difference to investigate', { amount: money(delta) })}
                 </span>
               </div>
               <RowTools
                 {...props}
                 kind="reconciliation"
-                item={{ ...r, name: a?.name || 'Statement check' }}
+                item={{ ...r, name: a?.name || tr('Statement check') }}
               />
             </div>
           );
         })}
         {!data.reconciliations.length && (
           <p>
-            Compare the closing balance on a statement with the ledger. A difference may mean
-            missing purchases, duplicate entries, or an incorrect opening balance. We keep the
-            difference visible until it is resolved.
+            {tr(
+              'Compare the closing balance on a statement with the ledger. A difference may mean missing purchases, duplicate entries, or an incorrect opening balance. We keep the difference visible until it is resolved.',
+            )}
           </p>
         )}
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Our breathing-room goals</h2>
+          <h2>{tr('Our breathing-room goals')}</h2>
           <button className="secondary small-button" onClick={() => props.start('goal')}>
-            <Plus size={16} /> Add a savings goal
+            <Plus size={16} />
+            {tr(' Add a savings goal')}
           </button>
         </div>
         {data.goals.map((g) => (
@@ -138,11 +154,13 @@ export default function MoneyExtras(props: ViewProps) {
             <div className="grow">
               <strong>{g.name}</strong>
               <p>
-                {money(g.savedCents)} set aside toward {money(g.targetCents)}
-                {g.dueDate ? ' · By ' + g.dueDate : ''}
+                {money(g.savedCents)}
+                {tr(' set aside toward ')}
+                {money(g.targetCents)}
+                {g.dueDate ? tr(' · By ') + dateLabel(g.dueDate) : ''}
               </p>
               <progress
-                aria-label={`${g.name} savings progress`}
+                aria-label={tr('{name} savings progress', { name: g.name })}
                 value={g.savedCents}
                 max={g.targetCents}
               />
@@ -153,13 +171,16 @@ export default function MoneyExtras(props: ViewProps) {
         ))}
         {!data.goals.length && (
           <Empty
-            title="A little breathing room is a goal, too."
-            text="Track a cash cushion or another savings goal once urgent obligations are covered."
+            title={tr('A little breathing room is a goal, too.')}
+            text={tr(
+              'Track a cash cushion or another savings goal once urgent obligations are covered.',
+            )}
           />
         )}
         <p className="help">
-          Goal balances are amounts you report as set aside. They do not move money or automatically
-          increase your protected cash buffer.
+          {tr(
+            'Goal balances are amounts you report as set aside. They do not move money or automatically increase your protected cash buffer.',
+          )}
         </p>
       </section>
     </>

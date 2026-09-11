@@ -46,23 +46,15 @@ BLOB_READ_WRITE_TOKEN=YOUR-PRIVATE-STORE-TOKEN
 
 Alternatively choose `STORAGE_DRIVER=s3` and fill the S3 environment variables in `.env.example`. Use a bucket owned by the household with no public read policy. Downloading originals goes through a household-authenticated route. On a Node server with persistent disk, `STORAGE_DRIVER=local` is supported. [Vercel Blob SDK documentation](https://vercel.com/docs/vercel-blob/using-blob-sdk).
 
-## 4. Personal AI provider
+## 4. Personal AI providers
 
-Use a personal API key with a provider-level spending cap. CGC uses OpenRouter; this app supports the same endpoint family without depending on CGC's backend.
+Open **Household / Hogar** and use the two AI connection cards. Choose Grok (xAI), Groq, OpenRouter, Gemini or a compatible provider for chat. Choose **Gemini · Google AI Studio** independently for receipt and PDF reading. Enter the API key in the corresponding password field, load current models, select a model, and save. A Studio account needs an API key from [AI Studio](https://aistudio.google.com/apikey); Google app sign-in is a separate connection.
 
-```text
-# OpenRouter example (choose a current model in your own account)
-AI_BASE_URL=https://openrouter.ai/api/v1
-AI_API_KEY=YOUR-PERSONAL-KEY
-AI_MODEL=YOUR-CHOSEN-MODEL-ID
-AI_JSON_MODE=true
-AI_DAILY_CALL_LIMIT=40
-AI_MAX_OUTPUT_TOKENS=4000
-```
+Keys may also be supplied through environment variables: AI_PROVIDER, AI_MODEL, OPENROUTER_API_KEY, GROQ_API_KEY, XAI_API_KEY or GEMINI_API_KEY. Set DOCUMENT_AI_PROVIDER=google and DOCUMENT_AI_MODEL to the chosen Gemini model for an independent reader. A custom compatible provider uses AI_BASE_URL and AI_API_KEY. UI settings override environment model defaults. See .env.example and [the complete AI guide](AI-AND-LANGUAGES.md).
 
-For OpenAI, set `AI_BASE_URL=https://api.openai.com/v1` and a compatible model. Other OpenAI-compatible gateways can be used. This adapter uses Chat Completions with JSON output validated by Zod. Some models require different token settings or lack JSON/PDF support; those need a small adapter extension, not a finance-engine rewrite. No fallback chain silently sends financial documents to another provider.
+The coach uses Vercel AI SDK with explicit tools and at most four calls per turn. The reader uses native Gemini PDF/image inputs or OpenAI-compatible JSON extraction, validated by Zod. Source documents remain saved after a failure. Searchable PDF text is extracted locally; CSV imports do not use AI. Choose models with the required capabilities; test a synthetic receipt before trusting extraction.
 
-Choose text + image support for receipt photos and native PDF input support for scanned PDFs. Searchable PDFs are extracted locally first. OpenRouter can handle native PDF/file inputs as documented [here](https://openrouter.ai/docs/guides/overview/multimodal/pdfs). Unsupported files remain saved with a retry/error state. Files over 4 MB and very long documents must be split. The call cap persists across server restarts; it is not a precise dollar budget.
+Use provider-level spending caps. The shared app call cap includes every SDK step and failed request, persists across restarts, and is not an exact dollar budget. No fallback silently switches providers. API keys saved in the UI are encrypted in the database using AUTH_SECRET and excluded from exports. Keep that secret stable and backed up separately.
 
 ## 5. Vercel
 

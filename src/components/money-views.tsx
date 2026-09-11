@@ -1,4 +1,5 @@
 'use client';
+import { useI18n, LanguageSwitcher } from './i18n';
 import { useState } from 'react';
 import {
   Plus,
@@ -13,11 +14,12 @@ import {
 import { ViewProps, api } from './client-utils';
 import { Empty, RowTools, CashChart } from './shared';
 import { accountBalance, payoff, occurrences } from '@/lib/finance';
-import { money, dollarsToCents, Obligation, HouseholdData } from '@/lib/domain';
+import { dollarsToCents, Obligation, HouseholdData } from '@/lib/domain';
 import Dialog from './dialog';
 import MoneyExtras from './money-extras';
-const label = (s: string) => s.replace(/_/g, ' ');
+
 export function MoneyView(props: ViewProps) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const { s, start } = props;
   const { data, today } = s;
   const [query, setQuery] = useState('');
@@ -25,20 +27,22 @@ export function MoneyView(props: ViewProps) {
     <>
       <section className="panel">
         <div className="section-title">
-          <h2>Our accounts</h2>
+          <h2>{tr('Our accounts')}</h2>
           <button className="secondary small-button" onClick={() => start('account')}>
-            <Plus size={16} /> Add account
+            <Plus size={16} />
+            {tr(' Add account')}
           </button>
         </div>
         {data.accounts.length ? (
           <div className="account-grid">
             {data.accounts.map((a) => (
               <article className="account-card" key={a.id}>
-                <span className="pill">{label(a.kind)}</span>
+                <span className="pill">{tr(a.kind)}</span>
                 <h3>{a.name}</h3>
                 <strong>{money(accountBalance(a, data.transactions, today))}</strong>
                 <small>
-                  Starting {a.openingDate} · {money(a.balanceCents)}
+                  {tr('Starting ')}
+                  {dateLabel(a.openingDate)} · {money(a.balanceCents)}
                 </small>
                 <RowTools {...props} kind="account" item={a} />
               </article>
@@ -46,25 +50,26 @@ export function MoneyView(props: ViewProps) {
           </div>
         ) : (
           <Empty
-            title="Start with just one account."
-            text="Use its opening statement balance if you’ll import past transactions."
+            title={tr('Start with just one account.')}
+            text={tr('Use its opening statement balance if you’ll import past transactions.')}
           />
         )}
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Money in and out</h2>
+          <h2>{tr('Money in and out')}</h2>
           <button className="secondary small-button" onClick={() => start('transaction')}>
-            <Plus size={16} /> Add entry
+            <Plus size={16} />
+            {tr(' Add entry')}
           </button>
         </div>
         <label className="search">
           <Search size={17} />
           <input
-            aria-label="Find transactions"
+            aria-label={tr('Find transactions')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Find a purchase, account, or category"
+            placeholder={tr('Find a purchase, account, or category')}
           />
         </label>
         {data.transactions
@@ -82,10 +87,11 @@ export function MoneyView(props: ViewProps) {
               <div className="grow">
                 <strong>{t.description}</strong>
                 <p>
-                  {t.date} · {data.accounts.find((a) => a.id === t.accountId)?.name} · {t.category}
+                  {dateLabel(t.date)} · {data.accounts.find((a) => a.id === t.accountId)?.name} ·{' '}
+                  {t.category}
                 </p>
                 <small>
-                  {label(t.type)}
+                  {tr(t.type)}
                   {t.type === 'transfer'
                     ? ' → ' + data.accounts.find((a) => a.id === t.toAccountId)?.name
                     : ''}
@@ -97,20 +103,22 @@ export function MoneyView(props: ViewProps) {
           ))}
         {!data.transactions.length && (
           <Empty
-            title="A receipt, a quick entry, a little more clarity."
-            text="Your reviewed purchases and income will appear here."
+            title={tr('A receipt, a quick entry, a little more clarity.')}
+            text={tr('Your reviewed purchases and income will appear here.')}
           />
         )}
         <p className="help">
-          Borrowed money is tracked separately from earnings. A transfer to pay a credit card does
-          not count as a second purchase.
+          {tr(
+            'Borrowed money is tracked separately from earnings. A transfer to pay a credit card does not count as a second purchase.',
+          )}
         </p>
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Everything we owe</h2>
+          <h2>{tr('Everything we owe')}</h2>
           <button className="secondary small-button" onClick={() => start('debt')}>
-            <Plus size={16} /> Add debt
+            <Plus size={16} />
+            {tr(' Add debt')}
           </button>
         </div>
         {data.debts.map((d) => (
@@ -121,21 +129,28 @@ export function MoneyView(props: ViewProps) {
             <div className="grow">
               <strong>{d.name}</strong>
               <p>
-                {label(d.kind)} ·{' '}
-                {d.aprBps === null ? 'Interest rate unknown' : `${d.aprBps / 100}% APR`} ·{' '}
-                {money(d.minimumCents)} minimum
+                {tr(d.kind)} ·{' '}
+                {d.aprBps === null ? tr('Interest rate unknown') : `${d.aprBps / 100}% APR`} ·{' '}
+                {money(d.minimumCents)}
+                {tr(' minimum')}
               </p>
               <small>
-                Balance as of {d.balanceDate}
-                {d.dueDate ? ' · Due ' + d.dueDate : ''}
-                {d.autopay ? ' · Automatic withdrawal' : ''}
+                {tr('Balance as of ')}
+                {dateLabel(d.balanceDate)}
+                {d.dueDate ? tr(' · Due ') + dateLabel(d.dueDate) : ''}
+                {d.autopay ? tr(' · Automatic withdrawal') : ''}
               </small>
-              {d.pastDueCents > 0 && <p className="danger">{money(d.pastDueCents)} past due</p>}
+              {d.pastDueCents > 0 && (
+                <p className="danger">
+                  {money(d.pastDueCents)}
+                  {tr(' past due')}
+                </p>
+              )}
             </div>
             <div className="right">
               <b>{money(d.balanceCents)}</b>
               <span className={'pill ' + (d.status !== 'current' ? 'warm' : '')}>
-                {label(d.status)}
+                {tr(d.status)}
               </span>
             </div>
             <RowTools {...props} kind="debt" item={d} />
@@ -143,13 +158,14 @@ export function MoneyView(props: ViewProps) {
         ))}
         {!data.debts.length && (
           <Empty
-            title="You don’t have to add them all today."
-            text="Start with your mortgage, then add one card or loan at a time."
+            title={tr('You don’t have to add them all today.')}
+            text={tr('Start with your mortgage, then add one card or loan at a time.')}
           />
         )}
         <p className="help">
-          Debt balances are statement snapshots. Update them when a new statement arrives; a payment
-          may include interest and fees.
+          {tr(
+            'Debt balances are statement snapshots. Update them when a new statement arrives; a payment may include interest and fees.',
+          )}
         </p>
       </section>
       <MoneyExtras {...props} />
@@ -157,6 +173,7 @@ export function MoneyView(props: ViewProps) {
   );
 }
 export function PlanView(props: ViewProps & { upload: () => void; coach: () => void }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const { s, start, refresh, notify } = props;
   const { data, forecast: f } = s;
   const [extra, setExtra] = useState('0'),
@@ -164,30 +181,36 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
     [error, setError] = useState('');
   return (
     <>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error">{tr(error)}</div>}
       <section className="panel">
         <div className="section-title">
-          <h2>Housing and next steps</h2>
+          <h2>{tr('Housing and next steps')}</h2>
           <button className="secondary small-button" onClick={() => start('task')}>
-            <Plus size={16} /> Add step
+            <Plus size={16} />
+            {tr(' Add step')}
           </button>
         </div>
         <div className="notice">
-          For an overdue U.S. mortgage, contact your servicer’s assistance team promptly. If you
-          have a sale date or legal papers, seek a HUD-approved counselor and local legal help now.{' '}
+          {tr(
+            'For an overdue U.S. mortgage, contact your servicer’s assistance team promptly. If you have a sale date or legal papers, seek a HUD-approved counselor and local legal help now.',
+          )}{' '}
           <a
-            href="https://www.consumerfinance.gov/ask-cfpb/if-i-cant-pay-my-mortgage-loan-what-are-my-options-en-268/"
+            href={
+              locale === 'es'
+                ? 'https://www.consumerfinance.gov/es/vivienda/inseguridad-habitacional/asistencia-hipotecas-y-viviendas/'
+                : 'https://www.consumerfinance.gov/ask-cfpb/if-i-cant-pay-my-mortgage-loan-what-are-my-options-en-268/'
+            }
             target="_blank"
             rel="noreferrer"
           >
-            CFPB guidance ↗
+            {tr('CFPB guidance ↗')}
           </a>
         </div>
         {data.tasks.map((t) => (
           <div className={'list-row ' + (t.done ? 'completed' : '')} key={t.id}>
             <button
               className={'task-check ' + (t.done ? 'checked' : '')}
-              aria-label={t.done ? 'Mark incomplete' : 'Mark complete'}
+              aria-label={t.done ? tr('Mark incomplete') : tr('Mark complete')}
               onClick={async () => {
                 try {
                   await api('/api/records', {
@@ -207,8 +230,8 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
             <div className="grow">
               <strong>{t.title}</strong>
               <p>
-                {t.dueDate ? 'Due ' + t.dueDate : 'No date set'}
-                {t.urgent ? ' · Urgent' : ''}
+                {t.dueDate ? tr('Due ') + dateLabel(t.dueDate) : tr('No date set')}
+                {t.urgent ? tr(' · Urgent') : ''}
               </p>
               {t.note && <small>{t.note}</small>}
             </div>
@@ -221,60 +244,70 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
               className="text-button"
               onClick={() =>
                 start('task', {
-                  title: 'Call the mortgage servicer’s assistance team',
+                  title: tr('Call the mortgage servicer’s assistance team'),
                   urgent: true,
-                  note: 'Ask for the exact overdue amount, available repayment options, required documents, and application deadline. Ask for all proposed terms in writing.',
+                  note: tr(
+                    'Ask for the exact overdue amount, available repayment options, required documents, and application deadline. Ask for all proposed terms in writing.',
+                  ),
                 })
               }
             >
-              1. Add our servicer call <Plus size={16} />
+              {tr('1. Add our servicer call ')}
+              <Plus size={16} />
             </button>
             <button className="text-button" onClick={props.upload}>
-              2. Upload the latest housing notice <Upload size={16} />
+              {tr('2. Upload the latest housing notice ')}
+              <Upload size={16} />
             </button>
             <button className="text-button" onClick={props.coach}>
-              3. Prepare the call together <MessageCircle size={16} />
+              {tr('3. Prepare the call together ')}
+              <MessageCircle size={16} />
             </button>
           </div>
         )}
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>The next 30 days</h2>
+          <h2>{tr('The next 30 days')}</h2>
           <span className={'pill ' + (f.shortfallCents ? 'warm' : '')}>
             {f.shortfallCents
-              ? `${money(f.shortfallCents)} shortfall`
-              : 'Based on our listed payments'}
+              ? tr('{amount} shortfall', { amount: money(f.shortfallCents) })
+              : tr('Based on our listed payments')}
           </span>
         </div>
         {data.accounts.length ? (
           <CashChart points={f.points} />
         ) : (
           <Empty
-            title="First, add a cash account."
-            text="Then we can show how upcoming paydays and bills affect your balance."
+            title={tr('First, add a cash account.')}
+            text={tr('Then we can show how upcoming paydays and bills affect your balance.')}
           />
         )}
         {f.missing.length > 0 && (
           <details className="missing">
-            <summary>What’s missing from our picture? ({f.missing.length})</summary>
+            <summary>
+              {tr('What’s missing from our picture? (')}
+              {f.missing.length})
+            </summary>
             <ul>
               {f.missing.map((m) => (
-                <li key={m}>{m}</li>
+                <li key={m}>{tr(m)}</li>
               ))}
             </ul>
           </details>
         )}
         <p className="help">
-          An estimate, not a guarantee. Include groceries, fuel, debt minimums, and automatic
-          withdrawals. Outflows are counted before income on the same date.
+          {tr(
+            'An estimate, not a guarantee. Include groceries, fuel, debt minimums, and automatic withdrawals. Outflows are counted before income on the same date.',
+          )}
         </p>
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Bills, paydays & automatic withdrawals</h2>
+          <h2>{tr('Bills, paydays & automatic withdrawals')}</h2>
           <button className="secondary small-button" onClick={() => start('obligation')}>
-            <Plus size={16} /> Add to calendar
+            <Plus size={16} />
+            {tr(' Add to calendar')}
           </button>
         </div>
         {data.obligations.map((o) => {
@@ -287,14 +320,14 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
               <div className="grow">
                 <strong>{o.name}</strong>
                 <p>
-                  {next ? 'Due ' + next : 'No unpaid occurrence in this window'} ·{' '}
-                  {label(o.frequency)}
+                  {next ? tr('Due ') + dateLabel(next) : tr('No unpaid occurrence in this window')}{' '}
+                  · {tr(o.frequency)}
                 </p>
                 <small>
-                  {label(o.kind)} ·{' '}
+                  {tr(o.kind)} ·{' '}
                   {o.accountId
                     ? data.accounts.find((a) => a.id === o.accountId)?.name
-                    : 'No account chosen'}
+                    : tr('No account chosen')}
                 </small>
               </div>
               <b>{money(o.amountCents)}</b>
@@ -303,13 +336,16 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
                   className="secondary small-button"
                   onClick={() => setSettling({ o, date: next })}
                 >
-                  {o.kind === 'income' ? 'Received' : 'Paid'}
+                  {o.kind === 'income' ? tr('Received') : tr('Paid')}
                 </button>
               )}
               <RowTools {...props} kind="obligation" item={o} />
               {o.paidDates.length > 0 && (
                 <details className="paid-history">
-                  <summary>Payment history ({o.paidDates.length})</summary>
+                  <summary>
+                    {tr('Payment history (')}
+                    {o.paidDates.length})
+                  </summary>
                   {o.paidDates.map((date) => (
                     <div key={date}>
                       {date}
@@ -329,7 +365,7 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
                           }
                         }}
                       >
-                        Reopen
+                        {tr('Reopen')}
                       </button>
                     </div>
                   ))}
@@ -340,22 +376,25 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
         })}
         {!data.obligations.length && (
           <Empty
-            title="What happens before the next payday?"
-            text="Add income, housing, utilities, food, and debt withdrawals. Estimates for variable bills are okay; update them when you know."
+            title={tr('What happens before the next payday?')}
+            text={tr(
+              'Add income, housing, utilities, food, and debt withdrawals. Estimates for variable bills are okay; update them when you know.',
+            )}
           />
         )}
       </section>
       <section className="panel">
         <div className="section-title">
-          <h2>Compare ways to pay down debt</h2>
-          <span className="pill">PLANNING ESTIMATE</span>
+          <h2>{tr('Compare ways to pay down debt')}</h2>
+          <span className="pill">{tr('PLANNING ESTIMATE')}</span>
         </div>
         <p>
-          After essentials and agreed payments are covered, compare the effect of an extra monthly
-          amount.
+          {tr(
+            'After essentials and agreed payments are covered, compare the effect of an extra monthly amount.',
+          )}
         </p>
         <label className="field extra-payment">
-          <span>Extra per month ($)</span>
+          <span>{tr('Extra per month ($)')}</span>
           <input inputMode="decimal" value={extra} onChange={(e) => setExtra(e.target.value)} />
         </label>
         <div className="two-columns">
@@ -372,31 +411,45 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
             return (
               <div className="comparison" key={strategy}>
                 <h3>
-                  {strategy === 'avalanche' ? 'Highest interest first' : 'Smallest balance first'}
+                  {strategy === 'avalanche'
+                    ? tr('Highest interest first')
+                    : tr('Smallest balance first')}
                 </h3>
                 {!valid ? (
-                  <p>Enter a positive dollar amount or zero.</p>
+                  <p>{tr('Enter a positive dollar amount or zero.')}</p>
                 ) : p.available ? (
                   <>
-                    <strong>{p.months} months</strong>
-                    <p>{money(p.interestCents)} estimated interest</p>
-                    <small>{money(p.budgetCents)} total monthly debt payment</small>
+                    <strong>
+                      {p.months}
+                      {tr(' months')}
+                    </strong>
+                    <p>
+                      {money(p.interestCents)}
+                      {tr(' estimated interest')}
+                    </p>
+                    <small>
+                      {money(p.budgetCents)}
+                      {tr(' total monthly debt payment')}
+                    </small>
                   </>
                 ) : (
-                  <p>{p.reason}</p>
+                  <p>{tr(p.reason)}</p>
                 )}
               </div>
             );
           })}
         </div>
         <p className="help">
-          Assumes fixed rates, monthly interest, constant total payments, no new borrowing or fees.
-          This comparison does not establish affordability.
+          {tr(
+            'Assumes fixed rates, monthly interest, constant total payments, no new borrowing or fees. This comparison does not establish affordability.',
+          )}
         </p>
       </section>
       {settling && (
         <Dialog
-          title={settling.o.kind === 'income' ? 'Record this payday' : 'Record this payment'}
+          title={
+            settling.o.kind === 'income' ? tr('Record this payday') : tr('Record this payment')
+          }
           onClose={() => setSettling(null)}
         >
           <SettlementForm
@@ -411,7 +464,7 @@ export function PlanView(props: ViewProps & { upload: () => void; coach: () => v
               });
               await refresh();
               setSettling(null);
-              notify('Calendar and account updated together.');
+              notify(tr('Calendar and account updated together.'));
             }}
           />
         </Dialog>
@@ -428,6 +481,7 @@ function SettlementForm({
   data: HouseholdData;
   onSave: (data: Record<string, unknown>) => Promise<void>;
 }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const [accountId, setAccount] = useState(item.o.accountId || data.accounts[0]?.id || ''),
     [paymentDate, setPaymentDate] = useState(new Date().toLocaleDateString('en-CA')),
     [type, setType] = useState(
@@ -464,7 +518,7 @@ function SettlementForm({
             existingTransactionId: existing || null,
           });
         } catch (e) {
-          setError(e instanceof Error ? e.message : 'Check this payment.');
+          setError(e instanceof Error ? e.message : tr('Check this payment.'));
         } finally {
           setBusy(false);
         }
@@ -474,7 +528,7 @@ function SettlementForm({
         {item.o.name} · {money(item.o.amountCents)} · {item.date}
       </p>
       <label className="field">
-        <span>Account used</span>
+        <span>{tr('Account used')}</span>
         <select
           required
           value={accountId}
@@ -483,7 +537,7 @@ function SettlementForm({
             setExisting('');
           }}
         >
-          <option value="">Choose account</option>
+          <option value="">{tr('Choose account')}</option>
           {data.accounts.map((a) => (
             <option key={a.id} value={a.id}>
               {a.name}
@@ -492,32 +546,45 @@ function SettlementForm({
         </select>
       </label>
       <label className="field">
-        <span>Already recorded in our transactions?</span>
+        <span>{tr('Already recorded in our transactions?')}</span>
         <select value={existing} onChange={(e) => setExisting(e.target.value)}>
-          <option value="">No, create the transaction now</option>
+          <option value="">{tr('No, create the transaction now')}</option>
           {matches.map((t) => (
             <option key={t.id} value={t.id}>
-              {t.date} · {t.description}
+              {dateLabel(t.date)} · {t.description}
             </option>
           ))}
         </select>
-        <small>Choose an existing entry if you already imported or entered this payment.</small>
+        <small>
+          {tr('Choose an existing entry if you already imported or entered this payment.')}
+        </small>
       </label>
+      {!existing && (
+        <label className="field">
+          <span>{tr('Actual payment / receipt date')}</span>
+          <input
+            type="date"
+            required
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+          />
+        </label>
+      )}
       {!existing && item.o.kind !== 'income' && (
         <>
           <label className="field">
-            <span>Payment type</span>
+            <span>{tr('Payment type')}</span>
             <select value={type} onChange={(e) => setType(e.target.value)}>
-              <option value="expense">Everyday bill payment</option>
-              <option value="debt_payment">Loan / mortgage / advance repayment</option>
-              <option value="transfer">Transfer to a tracked credit card</option>
+              <option value="expense">{tr('Everyday bill payment')}</option>
+              <option value="debt_payment">{tr('Loan / mortgage / advance repayment')}</option>
+              <option value="transfer">{tr('Transfer to a tracked credit card')}</option>
             </select>
           </label>
           {type === 'transfer' && (
             <label className="field">
-              <span>Credit card receiving the payment</span>
+              <span>{tr('Credit card receiving the payment')}</span>
               <select required value={toAccountId} onChange={(e) => setTo(e.target.value)}>
-                <option value="">Choose destination</option>
+                <option value="">{tr('Choose destination')}</option>
                 {data.accounts
                   .filter((a) => a.id !== accountId)
                   .map((a) => (
@@ -530,13 +597,13 @@ function SettlementForm({
           )}
         </>
       )}
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error">{tr(error)}</div>}
       <button disabled={busy}>
         {busy
-          ? 'Saving…'
+          ? tr('Saving…')
           : existing
-            ? 'Link payment and update calendar'
-            : 'Record and update calendar'}
+            ? tr('Link payment and update calendar')
+            : tr('Record and update calendar')}
       </button>
     </form>
   );

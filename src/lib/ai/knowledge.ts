@@ -1,5 +1,12 @@
 export const knowledge = [
   {
+    id: 'vivienda-es',
+    title: 'Ayuda en español para la hipoteca y la vivienda',
+    path: 'https://www.consumerfinance.gov/es/vivienda/inseguridad-habitacional/asistencia-hipotecas-y-viviendas/',
+    source: 'CFPB · consultado 2026-09-11',
+    text: 'Las agencias de asesoría de vivienda aprobadas por HUD pueden ayudar a revisar opciones cuando hay dificultades para pagar una hipoteca. Reúne el último aviso, las condiciones de la pausa de pagos o forbearance y las fechas límite. Contacta al administrador hipotecario para conocer los requisitos concretos. Esta guía general no determina elegibilidad, no reemplaza las condiciones de tu préstamo ni garantiza conservar la casa.',
+  },
+  {
     id: 'housing-first',
     title: 'Overdue housing: prepare for a servicer call',
     path: 'https://www.consumerfinance.gov/ask-cfpb/if-i-cant-pay-my-mortgage-loan-what-are-my-options-en-268/',

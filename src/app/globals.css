@@ -423,20 +423,24 @@ footer {
     display: none;
   }
   nav {
-    display: flex;
-    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
     margin-top: 15px;
     gap: 5px;
   }
   nav a,
   nav button {
-    padding: 9px 11px;
-    white-space: nowrap;
-    font-size: 13px;
+    padding: 9px 5px;
+    white-space: normal;
+    font-size: 14px;
+    min-width: 0;
+    justify-content: center;
     gap: 6px;
   }
   .sidebar nav svg {
     width: 16px;
+    flex-shrink: 0;
   }
   main {
     margin: 0;
@@ -1481,4 +1485,45 @@ progress::-webkit-progress-value {
   justify-content: space-between;
   gap: 20px;
   padding: 8px;
+}
+/* Language and connection controls remain usable on narrow phone screens. */
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.language-switcher select {
+  width: auto;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.55rem;
+}
+.login-card > .language-switcher {
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+.ai-settings select {
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+.ai-settings .record-form > button {
+  width: fit-content;
+}
+.chat-messages details {
+  font-size: 0.8rem;
+  margin-top: 0.75rem;
+}
+@media (max-width: 650px) {
+  .header-right .pill {
+    display: none;
+  }
+  .language-switcher > span {
+    display: none;
+  }
+  .language-switcher select {
+    max-width: 108px;
+  }
+  .header-right {
+    gap: 0.4rem;
+  }
 }

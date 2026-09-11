@@ -8,12 +8,50 @@ import { household, writeRecord, list } from '../src/lib/db';
 import { forecast } from '../src/lib/finance';
 import { today } from '../src/lib/domain';
 import { retrieve } from '../src/lib/ai/retrieval';
+import { spendingSummary, balanceChecks, debtComparison } from '../src/lib/ai/financial-tools';
+import { dateSchema } from '../src/lib/domain';
 process.chdir(resolve(dirname(fileURLToPath(import.meta.url)), '..'));
 loadEnvConfig(process.cwd());
 const server = new McpServer({ name: 'steadier-household', version: '0.1.0' });
 const out = (value: unknown) => ({
   content: [{ type: 'text' as const, text: JSON.stringify(value) }],
 });
+server.registerTool(
+  'spending_summary',
+  {
+    description:
+      'Calculate confirmed spending, earnings, borrowing, transfers and debt repayments separately over a date range.',
+    inputSchema: { from: dateSchema, to: dateSchema },
+    annotations: { readOnlyHint: true },
+  },
+  async ({ from, to }) => {
+    if (from > to) throw new Error('Use an ordered date range.');
+    return out(spendingSummary(await household(), from, to));
+  },
+);
+server.registerTool(
+  'compare_debt_plans',
+  {
+    description:
+      'Compare deterministic debt payoff scenarios and show incomplete facts and affordability limits.',
+    inputSchema: { extraCents: z.number().int().min(0).max(100000000) },
+    annotations: { readOnlyHint: true },
+  },
+  async ({ extraCents }) => {
+    const data = await household();
+    return out(debtComparison(data, today(data.settings.timeZone), extraCents));
+  },
+);
+server.registerTool(
+  'check_statement_balances',
+  {
+    description:
+      'Compare statement closing balances with the ledger without changing any balances.',
+    inputSchema: {},
+    annotations: { readOnlyHint: true },
+  },
+  async () => out(balanceChecks(await household())),
+);
 server.registerTool(
   'household_snapshot',
   {

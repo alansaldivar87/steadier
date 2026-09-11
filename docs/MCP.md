@@ -17,3 +17,7 @@ Copy the server entry from `.mcp.example.json` into your agent's MCP configurati
 The web page also feature-detects the proposed WebMCP registry. Supported browsers can read `household_summary` or open the entry form with `start_expense_entry`. These are optional browser capabilities; standard forms do not depend on them. Live WebMCP browser validation was unavailable in this build. The stdio MCP protocol is exercised through a real SDK client in tests.
 
 No MCP tool can transfer money, accept an agreement, access Gmail, apply for debt, or confirm review drafts. The household completes financial recording in the app.
+
+## Financial calculation tools
+
+The same deterministic functions used by the in-app assistant are available as `spending_summary`, `compare_debt_plans`, and `check_statement_balances`. They are read-only and household-scoped. Document search expands English/Spanish financial terms. These tools do not send money or confirm drafts.

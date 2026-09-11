@@ -1,5 +1,7 @@
 import { loadEnvConfig } from '@next/env';
 loadEnvConfig(process.cwd());
+const { aiConfig } = await import('../src/lib/ai/config');
+const ai = await aiConfig();
 const p = process.env;
 const checks = [
   ['Google OAuth client', !!p.AUTH_GOOGLE_ID && !!p.AUTH_GOOGLE_SECRET],
@@ -8,7 +10,7 @@ const checks = [
     'Two household emails',
     (p.ALLOWED_EMAILS || '').split(',').filter((e) => e.trim()).length === 2,
   ],
-  ['AI provider', !!p.AI_API_KEY && !!p.AI_MODEL],
+  ['AI provider', ai.configured],
   ['Remote database', !!p.DATABASE_URL && !p.DATABASE_URL.startsWith('file:')],
   [
     'Remote file storage',

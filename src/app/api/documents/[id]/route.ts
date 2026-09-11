@@ -3,6 +3,7 @@ import { getRecord } from '@/lib/db';
 import { DocumentRecord } from '@/lib/domain';
 import { loadFile } from '@/lib/storage';
 import { processDocument } from '@/lib/documents';
+import { requestLocale } from '@/lib/i18n';
 export const maxDuration = 60;
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,7 +28,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     sameOrigin(request);
     const member = await requireMember();
-    return Response.json(await processDocument((await params).id, member.email));
+    return Response.json(
+      await processDocument((await params).id, member.email, requestLocale(request)),
+    );
   } catch (e) {
     return errorResponse(e);
   }

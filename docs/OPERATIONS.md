@@ -26,9 +26,9 @@ For this libSQL schema, migrate all four tables (`records`, `audit`, `ai_usage`,
 
 ## AI spend and availability
 
-Each call reserves a durable daily slot before network activity; success/failure and returned token counts are recorded. A request killed by the runtime can remain `reserved`; it still counts toward the cap. Do not reset these rows automatically because the provider may have billed the request. Configure the provider's own monetary spending cap. Missing/unavailable AI never disables manual entries, calendar use, export or deterministic CSV import.
+Each provider HTTP call, including every SDK tool-loop step, reserves a durable daily slot before network activity; success/failure and returned token counts are recorded. A request killed by the runtime can remain `reserved`; it still counts toward the cap. Do not reset these rows automatically because the provider may have billed the request. Configure the provider's own monetary spending cap. Missing/unavailable AI never disables manual entries, calendar use, export or deterministic CSV import.
 
-Provider keys are server-only environment settings. Changing the model/provider changes where future document contents and chat context are sent. Test a synthetic receipt, an ordinary text PDF, and a scanned PDF with the selected model before relying on live extraction. Model support differs; a failed extraction is preserved for retry.
+Provider keys come from server-only environment settings or the separate encrypted credential table. Back up AUTH_SECRET separately; keys saved through the UI need to be re-entered after rotating it. Settings and exports never return keys. Changing the model/provider changes where future document contents and chat context are sent. Test a synthetic receipt, an ordinary text PDF, and a scanned PDF with the selected model before relying on live extraction. Model support differs; a failed extraction is preserved for retry.
 
 ## Auth and deployment
 

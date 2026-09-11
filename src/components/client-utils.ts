@@ -1,3 +1,4 @@
+import { resolveLocale } from '@/lib/i18n';
 import { HouseholdData, RecordKind } from '@/lib/domain';
 import { forecast } from '@/lib/finance';
 export type Snapshot = {
@@ -8,6 +9,8 @@ export type Snapshot = {
   connections: {
     ai: boolean;
     model: string | null;
+    documentAi: boolean;
+    documentModel: string | null;
     storage: string;
     database: string;
     usage: { calls: number; inputTokens: number | null; outputTokens: number | null };
@@ -32,11 +35,15 @@ export type ViewProps = {
 };
 export type Source = { id: string; title: string; path: string; source: string; excerpt: string };
 export async function api<T = unknown>(path: string, body?: unknown, method = 'POST'): Promise<T> {
+  const locale = resolveLocale(
+    typeof document !== 'undefined' ? document.documentElement.lang : null,
+  );
+  const headers = { 'Content-Type': 'application/json', 'x-steadier-locale': locale };
   const r = await fetch(
     path,
     body === undefined
-      ? { cache: 'no-store' }
-      : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      ? { cache: 'no-store', headers }
+      : { method, headers, body: JSON.stringify(body) },
   );
   const result = await r.json();
   if (!r.ok) throw new Error(result.error || 'Could not finish. Please try again.');

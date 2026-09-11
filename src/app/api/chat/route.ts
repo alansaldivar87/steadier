@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { requireMember, sameOrigin, jsonBody, errorResponse } from '@/lib/access';
-import { list } from '@/lib/db';
-import { coach } from '@/lib/ai/coach';
-export const maxDuration = 60;
+import { coach, conversation } from '@/lib/ai/coach';
+import { requestLocale } from '@/lib/i18n';
+export const maxDuration = 120;
 export async function GET() {
   try {
-    await requireMember();
-    return Response.json((await list('message')).slice(0, 100).reverse(), {
+    const member = await requireMember();
+    return Response.json(await conversation(member.email), {
       headers: { 'Cache-Control': 'no-store' },
     });
   } catch (e) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const { message } = z
       .object({ message: z.string().trim().min(1).max(4000) })
       .parse(await jsonBody(request));
-    return Response.json(await coach(message, member.email));
+    return Response.json(await coach(message, member.email, requestLocale(request)));
   } catch (e) {
     return errorResponse(e);
   }

@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { headers } from 'next/headers';
 import { allowedEmail, localAccess } from './auth-policy';
+import { ZodError } from 'zod';
 export class HttpError extends Error {
   constructor(
     message: string,
@@ -43,7 +44,7 @@ export function errorResponse(error: unknown) {
     message = 'This item has already been saved. Refresh to see it.';
     status = 409;
   }
-  if (message.length > 600)
+  if (error instanceof ZodError || error instanceof SyntaxError || message.length > 600)
     message =
       'Some fields are missing or invalid. Check the dates, amounts, and selected accounts.';
   return Response.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });

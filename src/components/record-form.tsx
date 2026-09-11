@@ -1,4 +1,5 @@
 'use client';
+import { useI18n, LanguageSwitcher } from './i18n';
 import { useState } from 'react';
 import { Account, RecordKind, dollarsToCents } from '@/lib/domain';
 type Field = {
@@ -261,6 +262,7 @@ export default function RecordForm({
   submitLabel?: string;
   extra?: React.ReactNode;
 }) {
+  const { tr, money, dateLabel, locale } = useI18n();
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     const v = { ...initial };
     for (const f of fields[kind])
@@ -289,7 +291,7 @@ export default function RecordForm({
           if (kind === 'transaction' && v.type !== 'transfer') v.toAccountId = null;
           await onSave(v);
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Please check the entry.');
+          setError(err instanceof Error ? err.message : tr('Please check the entry.'));
         } finally {
           setBusy(false);
         }
@@ -318,13 +320,13 @@ export default function RecordForm({
                     checked={!!values[f.key]}
                     onChange={(e) => setValues({ ...values, [f.key]: e.target.checked })}
                   />
-                  <span>{f.label}</span>
+                  <span>{tr(f.label)}</span>
                 </>
               ) : (
                 <>
                   <span>
-                    {f.label}
-                    {f.optional && <small> Optional</small>}
+                    {tr(f.label)}
+                    {f.optional && <small>{tr(' Optional')}</small>}
                   </span>
                   {f.type === 'select' ? (
                     <select
@@ -333,10 +335,13 @@ export default function RecordForm({
                       required={!f.optional}
                       onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
                     >
-                      <option value="">Choose{f.optional ? ' / not sure yet' : ''}</option>
+                      <option value="">
+                        {tr('Choose')}
+                        {f.optional ? tr(' / not sure yet') : ''}
+                      </option>
                       {opts.map(([v, l]) => (
                         <option key={v} value={v}>
-                          {l}
+                          {f.options ? tr(l) : l}
                         </option>
                       ))}
                     </select>
@@ -366,7 +371,7 @@ export default function RecordForm({
                       {f.type === 'percent' && <b>%</b>}
                     </div>
                   )}
-                  {f.help && <small>{f.help}</small>}
+                  {f.help && <small>{tr(f.help)}</small>}
                 </>
               )}
             </label>
@@ -374,17 +379,24 @@ export default function RecordForm({
         })}
       {kind === 'debt' && (
         <p className="notice">
-          After saving, add its payment to the calendar so it appears in your cash-flow plan.
+          {tr(
+            'After saving, add its payment to the calendar so it appears in your cash-flow plan.',
+          )}
+        </p>
+      )}
+      {fields[kind].some((f) => f.type === 'money' || f.type === 'percent') && (
+        <p className="help">
+          {tr('Use a decimal point, for example 42.50. Amounts are in US dollars.')}
         </p>
       )}
       {extra}
       {error && (
         <div className="error" role="alert">
-          {error}
+          {tr(error)}
         </div>
       )}
       <button type="submit" disabled={busy}>
-        {busy ? 'Saving…' : submitLabel}
+        {busy ? tr('Saving…') : tr(submitLabel)}
       </button>
     </form>
   );

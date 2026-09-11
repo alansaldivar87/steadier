@@ -33,6 +33,7 @@ export async function db() {
           `CREATE TABLE IF NOT EXISTS ai_usage (id TEXT PRIMARY KEY, household TEXT NOT NULL, day TEXT NOT NULL, purpose TEXT NOT NULL, model TEXT NOT NULL, status TEXT NOT NULL, input_tokens INTEGER, output_tokens INTEGER, duration_ms INTEGER, created_at TEXT NOT NULL)`,
           `CREATE INDEX IF NOT EXISTS idx_ai_usage_household_day ON ai_usage(household,day)`,
           `CREATE TABLE IF NOT EXISTS unique_keys (household TEXT NOT NULL, key TEXT NOT NULL, record_id TEXT NOT NULL, PRIMARY KEY(household,key))`,
+          `CREATE TABLE IF NOT EXISTS ai_credentials (household TEXT NOT NULL, provider TEXT NOT NULL, encrypted_key TEXT NOT NULL, PRIMARY KEY(household,provider))`,
         ],
         'write',
       )

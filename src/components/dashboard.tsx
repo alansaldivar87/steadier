@@ -1,4 +1,5 @@
 'use client';
+import { useI18n, LanguageSwitcher } from './i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { signOut } from 'next-auth/react';
 import {
@@ -18,7 +19,7 @@ import {
   AlertCircle,
   LogOut,
 } from 'lucide-react';
-import { Draft, money } from '@/lib/domain';
+import { Draft } from '@/lib/domain';
 import RecordForm, { defaults } from './record-form';
 import Dialog from './dialog';
 import { api, optimizePhoto, type Snapshot, type EditableKind, type Entity } from './client-utils';
@@ -51,6 +52,7 @@ const icons = {
   settings: Settings,
 };
 export default function Dashboard() {
+  const { tr, money, dateLabel, locale } = useI18n();
   const [s, setS] = useState<Snapshot | null>(null),
     [section, setSection] = useState<Section>('today'),
     [error, setError] = useState(''),
@@ -89,44 +91,54 @@ export default function Dashboard() {
   useEffect(() => {
     const context = (
       document as unknown as {
-        modelContext?: { registerTool: (tool: unknown, options: unknown) => void };
+        modelContext?: {
+          registerTool: (tool: unknown, options: unknown) => void | Promise<unknown>;
+        };
       }
     ).modelContext;
     if (!context) return;
     const lifecycle = new AbortController();
     try {
-      context.registerTool(
-        {
-          name: 'household_summary',
-          description: 'Read the current household cash-flow estimate and missing information.',
-          inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-          annotations: { readOnlyHint: true, untrustedContentHint: true },
-          execute: async () => {
-            const state = await refresh();
-            return { today: state.today, forecast: state.forecast };
+      void Promise.resolve(
+        context.registerTool(
+          {
+            name: 'household_summary',
+            description: 'Read the current household cash-flow estimate and missing information.',
+            inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+            annotations: { readOnlyHint: true, untrustedContentHint: true },
+            execute: async () => {
+              const state = await refresh();
+              return { today: state.today, forecast: state.forecast };
+            },
           },
-        },
-        { signal: lifecycle.signal },
-      );
-      context.registerTool(
-        {
-          name: 'start_expense_entry',
-          description:
-            'Open an expense form for the household to fill in and save. Does not create a financial record.',
-          inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-          annotations: { readOnlyHint: false },
-          execute: async () => {
-            const state = await refresh();
-            setEditing({
-              requestId: crypto.randomUUID(),
-              kind: 'transaction',
-              data: defaults('transaction', state.today, state.data.accounts[0]?.id),
-            });
-            return { status: 'form_opened' };
+          { signal: lifecycle.signal },
+        ),
+      ).catch(() => {
+        /* Optional registration ends when its lifecycle is aborted. */
+      });
+      void Promise.resolve(
+        context.registerTool(
+          {
+            name: 'start_expense_entry',
+            description:
+              'Open an expense form for the household to fill in and save. Does not create a financial record.',
+            inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+            annotations: { readOnlyHint: false },
+            execute: async () => {
+              const state = await refresh();
+              setEditing({
+                requestId: crypto.randomUUID(),
+                kind: 'transaction',
+                data: defaults('transaction', state.today, state.data.accounts[0]?.id),
+              });
+              return { status: 'form_opened' };
+            },
           },
-        },
-        { signal: lifecycle.signal },
-      );
+          { signal: lifecycle.signal },
+        ),
+      ).catch(() => {
+        /* Optional registration ends when its lifecycle is aborted. */
+      });
     } catch {
       /* Experimental API is optional. */
     }
@@ -149,12 +161,12 @@ export default function Dashboard() {
       await refresh();
       if (success) setToast(success);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Please try again.');
+      setError(e instanceof Error ? e.message : tr('Please try again.'));
     }
   }
   async function processDoc(id: string) {
     setProcessing(id);
-    await action(() => api(`/api/documents/${id}`, {}), 'Document is ready for review.');
+    await action(() => api(`/api/documents/${id}`, {}), tr('Document is ready for review.'));
     setProcessing(null);
   }
   async function upload(file: File) {
@@ -171,11 +183,13 @@ export default function Dashboard() {
       setSection('documents');
       await refresh();
       setToast(
-        result.duplicate ? 'This document is already here.' : 'Document saved. Reading it now…',
+        result.duplicate
+          ? tr('This document is already here.')
+          : tr('Document saved. Reading it now…'),
       );
       if (!result.duplicate) await processDoc(result.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not upload.');
+      setError(e instanceof Error ? e.message : tr('Could not upload.'));
     } finally {
       setUploading(false);
     }
@@ -187,9 +201,11 @@ export default function Dashboard() {
           s<span>steadier</span>
           <i>●</i>
         </a>
-        <p>{error || 'Gathering our household…'}</p>
+        <p>{error || tr('Gathering our household…')}</p>
         {error && (
-          <button onClick={() => refresh().catch((e) => setError(e.message))}>Try again</button>
+          <button onClick={() => refresh().catch((e) => setError(e.message))}>
+            {tr('Try again')}
+          </button>
         )}
       </div>
     );
@@ -221,20 +237,22 @@ export default function Dashboard() {
     setEditing({ kind: d.kind as EditableKind, data: d.data, draft: d });
   };
   const heading = {
-    today: data.accounts.length ? 'Let’s take the next step.' : 'A clearer picture starts here.',
-    money: 'Every dollar has a place.',
-    plan: 'A plan we can actually follow.',
-    documents: 'Bring it all together.',
-    coach: 'Talk it through.',
-    settings: 'Our household, our way.',
+    today: data.accounts.length
+      ? tr('Let’s take the next step.')
+      : tr('A clearer picture starts here.'),
+    money: tr('Every dollar has a place.'),
+    plan: tr('A plan we can actually follow.'),
+    documents: tr('Bring it all together.'),
+    coach: tr('Talk it through.'),
+    settings: tr('Our household, our way.'),
   }[section];
   const subheading = {
-    today: 'Bring your money into one place. We’ll work through it together.',
-    money: 'Accounts, spending, and debt. Nothing to remember in your head.',
-    plan: 'See what is coming. Protect the essentials. Make room for progress.',
-    documents: 'A photo or a statement is enough to get started.',
-    coach: 'Ask a question, describe a purchase, or work through one difficult bill.',
-    settings: 'Keep your shared information and preferences up to date.',
+    today: tr('Bring your money into one place. We’ll work through it together.'),
+    money: tr('Accounts, spending, and debt. Nothing to remember in your head.'),
+    plan: tr('See what is coming. Protect the essentials. Make room for progress.'),
+    documents: tr('A photo or a statement is enough to get started.'),
+    coach: tr('Ask a question, describe a purchase, or work through one difficult bill.'),
+    settings: tr('Keep your shared information and preferences up to date.'),
   }[section];
   return (
     <div className="shell">
@@ -244,9 +262,12 @@ export default function Dashboard() {
           <i>●</i>
         </a>
         <div className="household">
-          {data.settings.name.toUpperCase()}
+          {(data.settings.name === 'Our household'
+            ? tr('Our household')
+            : data.settings.name
+          ).toUpperCase()}
           <br />
-          <strong>A little clearer, together.</strong>
+          <strong>{tr('A little clearer, together.')}</strong>
         </div>
         <nav>
           {(Object.keys(titles) as Section[]).map((key) => {
@@ -261,7 +282,7 @@ export default function Dashboard() {
                 }}
               >
                 <Icon size={19} />
-                {titles[key]}
+                {tr(titles[key])}
                 {key === 'documents' && pending.length > 0 && (
                   <b className="nav-count">{pending.length}</b>
                 )}
@@ -270,17 +291,21 @@ export default function Dashboard() {
           })}
         </nav>
         <div className="sidebar-note">
-          ONE STEP AT A TIME<p>You don’t have to figure it all out today.</p>
+          {tr('ONE STEP AT A TIME')}
+          <p>{tr('You don’t have to figure it all out today.')}</p>
           <div className="member">
             <span>{s.member.name.charAt(0)}</span>
             <div>
-              {s.member.local ? 'Local workspace' : s.member.name}
-              <small>{s.member.local ? 'Google connection pending' : 'Household member'}</small>
+              {s.member.local ? tr('Local workspace') : s.member.name}
+              <small>
+                {s.member.local ? tr('Google connection pending') : tr('Household member')}
+              </small>
             </div>
           </div>
           {!s.member.local && (
             <button className="text-button" onClick={() => signOut({ callbackUrl: '/login' })}>
-              <LogOut size={14} /> Sign out
+              <LogOut size={14} />
+              {tr(' Sign out')}
             </button>
           )}
         </div>
@@ -288,14 +313,18 @@ export default function Dashboard() {
       <main>
         <header>
           <span>
-            {data.settings.name} / {titles[section]}
+            {data.settings.name === 'Our household' ? tr('Our household') : data.settings.name} /{' '}
+            {tr(titles[section])}
           </span>
           <div className="header-right">
-            <span className="pill">{s.member.local ? 'Local workspace' : 'Shared household'}</span>
+            <LanguageSwitcher />
+            <span className="pill">
+              {s.member.local ? tr('Local workspace') : tr('Shared household')}
+            </span>
             <button
               className="icon-button"
-              aria-label="Refresh household"
-              onClick={() => action(refresh, 'Up to date.')}
+              aria-label={tr('Refresh household')}
+              onClick={() => action(refresh, tr('Up to date.'))}
             >
               <RefreshCw size={16} />
             </button>
@@ -304,16 +333,16 @@ export default function Dashboard() {
         {error && (
           <div className="error page-error" role="alert">
             <AlertCircle size={18} />
-            <span>{error}</span>
+            <span>{tr(error)}</span>
             <button className="text-button" onClick={() => setError('')}>
-              Dismiss
+              {tr('Dismiss')}
             </button>
           </div>
         )}
         {toast && (
           <div className="toast" role="status">
             <Check size={17} />
-            {toast}
+            {tr(toast)}
           </div>
         )}
         <input
@@ -343,57 +372,62 @@ export default function Dashboard() {
           <div>
             <div className="eyebrow">
               {section === 'today'
-                ? 'LET’S MAKE ROOM TO BREATHE'
+                ? tr('LET’S MAKE ROOM TO BREATHE')
                 : section === 'coach'
-                  ? 'A LITTLE HELP, WITHOUT THE JUDGMENT'
-                  : 'ONE HOUSEHOLD. ONE CLEARER PICTURE.'}
+                  ? tr('A LITTLE HELP, WITHOUT THE JUDGMENT')
+                  : tr('ONE HOUSEHOLD. ONE CLEARER PICTURE.')}
             </div>
-            <h1>{heading}</h1>
-            <p>{subheading}</p>
+            <h1>{tr(heading)}</h1>
+            <p>{tr(subheading)}</p>
           </div>
           <button onClick={() => setShowAdd(true)}>
-            <Plus size={18} /> Add something
+            <Plus size={18} />
+            {tr(' Add something')}
           </button>
         </div>
         {section === 'today' && (
           <>
             <section className="hero-grid">
               <div className="focus-card">
-                <div className="eyebrow">YOUR NEXT SMALL STEP</div>
+                <div className="eyebrow">{tr('YOUR NEXT SMALL STEP')}</div>
                 <h2>
                   {urgentHousing ? (
                     <>
-                      Give your home
+                      {tr('Give your home')}
                       <br />
-                      the first bit of attention.
+                      {tr('the first bit of attention.')}
                     </>
                   ) : !data.accounts.length ? (
                     <>
-                      Start with the account
+                      {tr('Start with the account')}
                       <br />
-                      that pays your bills.
+                      {tr('that pays your bills.')}
                     </>
                   ) : setupCount < 3 ? (
                     <>
-                      Let’s fill in
+                      {tr('Let’s fill in')}
                       <br />
-                      the next piece.
+                      {tr('the next piece.')}
                     </>
                   ) : (
                     <>
-                      Your money plan,
+                      {tr('Your money plan,')}
                       <br />
-                      one day at a time.
+                      {tr('one day at a time.')}
                     </>
                   )}
                 </h2>
                 <p>
                   {urgentHousing
-                    ? 'Keep your latest notice, servicer contact, and agreement deadline together.'
+                    ? tr(
+                        'Keep your latest notice, servicer contact, and agreement deadline together.',
+                      )
                     : !data.accounts.length
-                      ? 'Add its opening balance, then your next payday. That gives us a starting point.'
-                      : f.missing[0] ||
-                        'Your next 30 days are mapped out from the records you’ve confirmed.'}
+                      ? tr(
+                          'Add its opening balance, then your next payday. That gives us a starting point.',
+                        )
+                      : (f.missing[0] ? tr(f.missing[0]) : '') ||
+                        tr('Your next 30 days are mapped out from the records you’ve confirmed.')}
                 </p>
                 <button
                   onClick={() =>
@@ -405,21 +439,21 @@ export default function Dashboard() {
                   }
                 >
                   {urgentHousing
-                    ? 'Open our housing steps'
+                    ? tr('Open our housing steps')
                     : !data.accounts.length
-                      ? 'Add our first account'
+                      ? tr('Add our first account')
                       : setupCount < 3
-                        ? 'Continue our setup'
-                        : 'Look at our plan'}
+                        ? tr('Continue our setup')
+                        : tr('Look at our plan')}
                   <ArrowUpRight size={18} />
                 </button>
                 <div className="steps">
                   <b>01</b>
-                  <span>Find our footing</span>
+                  <span>{tr('Find our footing')}</span>
                   <i />
-                  <span>Make a plan</span>
+                  <span>{tr('Make a plan')}</span>
                   <i />
-                  <span>Build breathing room</span>
+                  <span>{tr('Build breathing room')}</span>
                 </div>
               </div>
               <div className="capture-card">
@@ -427,112 +461,119 @@ export default function Dashboard() {
                   <Camera />
                 </span>
                 <h2>
-                  Spent something?
+                  {tr('Spent something?')}
                   <br />
-                  Just capture it.
+                  {tr('Just capture it.')}
                 </h2>
-                <p>A photo, a statement, or a quick message. Start wherever is easiest.</p>
+                <p>{tr('A photo, a statement, or a quick message. Start wherever is easiest.')}</p>
                 <button
                   className="secondary"
                   disabled={uploading}
                   onClick={() => photoInput.current?.click()}
                 >
                   <Camera size={18} />
-                  {uploading ? 'Saving photo…' : 'Take a photo'}
+                  {uploading ? tr('Saving photo…') : tr('Take a photo')}
                 </button>
                 <button
                   className="text-button"
                   disabled={uploading}
                   onClick={() => fileInput.current?.click()}
                 >
-                  Upload a statement <ArrowUpRight size={16} />
+                  {tr('Upload a statement ')}
+                  <ArrowUpRight size={16} />
                 </button>
                 <button className="text-button" onClick={() => start('transaction')}>
-                  Or type it in <ArrowRight size={14} />
+                  {tr('Or type it in ')}
+                  <ArrowRight size={14} />
                 </button>
               </div>
             </section>
             <section className="metrics">
               <article>
-                <span>Cash we can use</span>
-                <strong>{data.accounts.length ? money(f.cashCents) : 'Let’s find out'}</strong>
+                <span>{tr('Cash we can use')}</span>
+                <strong>{data.accounts.length ? money(f.cashCents) : tr('Let’s find out')}</strong>
                 <small>
                   {data.accounts.length
-                    ? 'From confirmed cash accounts'
-                    : 'Add checking and savings balances'}
+                    ? tr('From confirmed cash accounts')
+                    : tr('Add checking and savings balances')}
                 </small>
               </article>
               <article>
-                <span>Available to plan · next 30 days</span>
+                <span>{tr('Available to plan · next 30 days')}</span>
                 <strong>
                   {f.spendableCents === null
-                    ? 'Still gathering the picture'
+                    ? tr('Still gathering the picture')
                     : money(f.spendableCents)}
                 </strong>
                 <small>
                   {f.shortfallCents
-                    ? `${money(f.shortfallCents)} projected shortfall`
+                    ? tr('{amount} projected shortfall', { amount: money(f.shortfallCents) })
                     : f.spendableCents === null
-                      ? 'Confirm the missing pieces first'
-                      : 'After listed payments and our buffer'}
+                      ? tr('Confirm the missing pieces first')
+                      : tr('After listed payments and our buffer')}
                 </small>
               </article>
               <article>
-                <span>Our total debt</span>
-                <strong>{data.debts.length ? money(f.totalDebtCents) : 'One at a time'}</strong>
+                <span>{tr('Our total debt')}</span>
+                <strong>{data.debts.length ? money(f.totalDebtCents) : tr('One at a time')}</strong>
                 <small>
                   {data.debts.length
-                    ? 'Latest recorded debt balances'
-                    : 'Start with the most urgent account'}
+                    ? tr('Latest recorded debt balances')
+                    : tr('Start with the most urgent account')}
                 </small>
               </article>
             </section>
             <div className="two-columns">
               <section className="panel">
                 <div className="section-title">
-                  <h2>Coming up next</h2>
+                  <h2>{tr('Coming up next')}</h2>
                   <button className="text-button" onClick={() => setSection('plan')}>
-                    Our calendar <ArrowRight size={16} />
+                    {tr('Our calendar ')}
+                    <ArrowRight size={16} />
                   </button>
                 </div>
                 {f.events.length ? (
                   f.events.slice(0, 5).map((e, i) => (
                     <div className="list-row" key={e.id + i}>
-                      <span className="date-tile">{e.date.slice(5)}</span>
+                      <span className="date-tile">{dateLabel(e.date)}</span>
                       <div className="grow">
                         <strong>{e.name}</strong>
-                        <p>{e.amountCents > 0 ? 'Money coming in' : 'Set this money aside'}</p>
+                        <p>
+                          {e.amountCents > 0 ? tr('Money coming in') : tr('Set this money aside')}
+                        </p>
                       </div>
                       <b className={e.amountCents > 0 ? 'positive' : ''}>{money(e.amountCents)}</b>
                     </div>
                   ))
                 ) : (
                   <Empty
-                    title="No surprises, once we add them."
-                    text="Add your next payday and the bills due before it."
+                    title={tr('No surprises, once we add them.')}
+                    text={tr('Add your next payday and the bills due before it.')}
                     action={() => start('obligation')}
-                    label="Add a bill or payday"
+                    label={tr('Add a bill or payday')}
                   />
                 )}
               </section>
               <section className="panel housing-panel">
-                <span className="pill warm">HOUSING FIRST</span>
-                <h2>First, protect the essentials.</h2>
+                <span className="pill warm">{tr('HOUSING FIRST')}</span>
+                <h2>{tr('First, protect the essentials.')}</h2>
                 <p>
-                  If a housing payment is overdue, contact your servicer now. Keep their deadlines
-                  and next steps here.
+                  {tr(
+                    'If a housing payment is overdue, contact your servicer now. Keep their deadlines and next steps here.',
+                  )}
                 </p>
                 <button
                   className="secondary"
                   onClick={() => {
                     setSection('plan');
                     start('task', {
-                      title: 'Contact mortgage servicer about repayment options',
+                      title: tr('Contact mortgage servicer about repayment options'),
                       urgent: true,
                     });
                   }}
                 >
-                  Add a housing step <ArrowRight size={16} />
+                  {tr('Add a housing step ')}
+                  <ArrowRight size={16} />
                 </button>
                 <a
                   className="inline-link"
@@ -540,19 +581,24 @@ export default function Dashboard() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Find a U.S. housing counselor <ArrowUpRight size={16} />
+                  {tr('Find a U.S. housing counselor ')}
+                  <ArrowUpRight size={16} />
                 </a>
               </section>
             </div>
             {pending.length > 0 && (
               <section className="panel">
                 <div className="section-title">
-                  <h2>{pending.length} new items to check</h2>
+                  <h2>
+                    {pending.length}
+                    {tr(' new items to check')}
+                  </h2>
                   <button onClick={() => setSection('documents')}>
-                    Review imports <ChevronRight size={17} />
+                    {tr('Review imports ')}
+                    <ChevronRight size={17} />
                   </button>
                 </div>
-                <p>Help the coach turn receipts and statements into reliable records.</p>
+                <p>{tr('Help the coach turn receipts and statements into reliable records.')}</p>
               </section>
             )}
           </>
@@ -582,24 +628,30 @@ export default function Dashboard() {
           <CoachView {...viewProps} showReview={() => setSection('documents')} />
         )}
         {section === 'settings' && <SettingsView {...viewProps} />}
-        <footer>Progress, not perfection. Every dollar you add makes the picture clearer.</footer>
+        <footer>
+          {tr('Progress, not perfection. Every dollar you add makes the picture clearer.')}
+        </footer>
       </main>
       {showAdd && (
-        <Dialog title="What would you like to add?" onClose={() => setShowAdd(false)}>
+        <Dialog title={tr('What would you like to add?')} onClose={() => setShowAdd(false)}>
           <div className="add-grid">
             {(
               [
-                ['transaction', 'Money spent or received', 'A quick entry for everyday money.'],
-                ['account', 'An account', 'Checking, savings, cash, or a credit card.'],
-                ['obligation', 'A bill or payday', 'What’s coming in or going out.'],
-                ['debt', 'A debt', 'Mortgage, card, loan, or cash advance.'],
-                ['task', 'A next step', 'A call, a deadline, or something to follow up.'],
-                ['memory', 'Something to remember', 'A preference or household goal.'],
+                [
+                  'transaction',
+                  tr('Money spent or received'),
+                  tr('A quick entry for everyday money.'),
+                ],
+                ['account', tr('An account'), tr('Checking, savings, cash, or a credit card.')],
+                ['obligation', tr('A bill or payday'), tr('What’s coming in or going out.')],
+                ['debt', tr('A debt'), tr('Mortgage, card, loan, or cash advance.')],
+                ['task', tr('A next step'), tr('A call, a deadline, or something to follow up.')],
+                ['memory', tr('Something to remember'), tr('A preference or household goal.')],
               ] as const
             ).map(([k, t, p]) => (
               <button className="add-option" key={k} onClick={() => start(k)}>
-                <strong>{t}</strong>
-                <span>{p}</span>
+                <strong>{tr(t)}</strong>
+                <span>{tr(p)}</span>
                 <ChevronRight size={19} />
               </button>
             ))}
@@ -610,16 +662,16 @@ export default function Dashboard() {
         <Dialog
           title={
             editing.draft
-              ? 'Check this before saving'
+              ? tr('Check this before saving')
               : editing.id
-                ? 'Update this entry'
-                : 'Add ' + editing.kind
+                ? tr('Update this entry')
+                : tr('Add ') + tr(editing.kind)
           }
           onClose={() => setEditing(null)}
         >
           {editing.draft && (
             <div className="notice">
-              {editing.draft.reason}
+              {tr(editing.draft.reason)}
               {editing.draft.documentId && (
                 <a
                   className="inline-link"
@@ -627,7 +679,7 @@ export default function Dashboard() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open original document ↗
+                  {tr('Open original document ↗')}
                 </a>
               )}
             </div>
@@ -637,18 +689,18 @@ export default function Dashboard() {
             kind={editing.kind}
             initial={editing.data}
             accounts={data.accounts}
-            submitLabel={editing.draft ? 'Confirm and save' : 'Save entry'}
+            submitLabel={editing.draft ? tr('Confirm and save') : tr('Save entry')}
             extra={
               editing.draft && (
                 <>
                   {['debt', 'account', 'memory'].includes(editing.kind) && (
                     <label className="field">
-                      <span>Does this update something already here?</span>
+                      <span>{tr('Does this update something already here?')}</span>
                       <select
                         value={updateTarget}
                         onChange={(e) => setUpdateTarget(e.target.value)}
                       >
-                        <option value="">Create a new record</option>
+                        <option value="">{tr('Create a new record')}</option>
                         {(editing.kind === 'debt'
                           ? data.debts
                           : editing.kind === 'account'
@@ -661,8 +713,9 @@ export default function Dashboard() {
                         ))}
                       </select>
                       <small>
-                        Choose the existing debt for a newer statement so the balance is updated
-                        instead of counted twice.
+                        {tr(
+                          'Choose the existing debt for a newer statement so the balance is updated instead of counted twice.',
+                        )}
                       </small>
                     </label>
                   )}
@@ -673,7 +726,9 @@ export default function Dashboard() {
                       onChange={(e) => setAllowDuplicate(e.target.checked)}
                     />
                     <span>
-                      This is a separate entry even if the date and amount match an existing entry.
+                      {tr(
+                        'This is a separate entry even if the date and amount match an existing entry.',
+                      )}
                     </span>
                   </label>
                   <button
@@ -688,10 +743,10 @@ export default function Dashboard() {
                           data: editing.data,
                         });
                         setEditing(null);
-                      }, 'Draft dismissed.')
+                      }, tr('Draft dismissed.'))
                     }
                   >
-                    Dismiss this draft / already recorded
+                    {tr('Dismiss this draft / already recorded')}
                   </button>
                 </>
               )
@@ -723,20 +778,21 @@ export default function Dashboard() {
                 });
               await refresh();
               setEditing(null);
-              setToast('Saved to our household.');
+              setToast(tr('Saved to our household.'));
             }}
           />
         </Dialog>
       )}
       {pendingDelete && (
-        <Dialog title="Remove this entry?" onClose={() => setPendingDelete(null)}>
+        <Dialog title={tr('Remove this entry?')} onClose={() => setPendingDelete(null)}>
           <p className="dialog-copy">
-            Remove “{pendingDelete.name || pendingDelete.title || pendingDelete.description}” from
-            the active records? The change remains in the audit history.
+            {tr('Remove “')}
+            {pendingDelete.name || pendingDelete.title || pendingDelete.description}
+            {tr('” from the active records? The change remains in the audit history.')}
           </p>
           <div className="dialog-actions">
             <button className="secondary" onClick={() => setPendingDelete(null)}>
-              Keep it
+              {tr('Keep it')}
             </button>
             <button
               className="danger-button"
@@ -748,10 +804,10 @@ export default function Dashboard() {
                     'DELETE',
                   );
                   setPendingDelete(null);
-                }, 'Entry removed.')
+                }, tr('Entry removed.'))
               }
             >
-              Remove entry
+              {tr('Remove entry')}
             </button>
           </div>
         </Dialog>
