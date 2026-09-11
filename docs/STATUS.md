@@ -2,6 +2,12 @@
 
 Updated September 11, 2026. This document distinguishes implemented code from connected live services.
 
+## Production readiness: not ready
+
+The September 11 configuration audit confirms that Google OAuth, a production HTTPS auth origin, chat/document AI credentials and models, a remote database, and remote private file storage are missing from the current workspace. Local access is still enabled for development; the production environment must explicitly disable it. No local Vercel project link or active GitHub Actions workflow is present. Live Google sign-in for both members, rejection of another account, phone uploads, provider extraction, cloud persistence and a backup restore remain unverified.
+
+The audit fixed the `npm run doctor` CommonJS startup error and added separate document AI, HTTPS origin and local-access checks. It now completes and exits nonzero for the missing configuration without printing secrets. TypeScript passes and `npm audit --omit=dev` reports zero known vulnerabilities. These checks do not establish live production readiness. The migration instructions now include the encrypted credential table and the session secret needed to recover its keys.
+
 ## Implemented and locally verified
 
 - Standard Next.js application and production build.

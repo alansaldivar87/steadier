@@ -22,7 +22,7 @@ On remote deployments, enable the database provider's backups and keep object st
 
 ## Local-to-cloud migration
 
-For this libSQL schema, migrate all four tables (`records`, `audit`, `ai_usage`, `unique_keys`) using a database export/import supported by the chosen provider. Preserve IDs, household ID, revisions and unique keys. Move each original upload to the configured remote store using its existing `storageKey`. Vercel Blob's returned pathname must be reflected in the document metadata if it differs. Test against a separate destination and retain the local source. The app does not yet have a one-click migration/restore UI; the JSON export is an additional recovery artifact, not a complete binary backup.
+For this libSQL schema, migrate all five tables (`records`, `audit`, `ai_usage`, `unique_keys`, `ai_credentials`) using a database export/import supported by the chosen provider. Preserve IDs, household ID, revisions and unique keys. Preserve `AUTH_SECRET` separately so saved provider credentials remain decryptable, or reconnect providers at the destination. Move each original upload to the configured remote store using its existing `storageKey`. Vercel Blob's returned pathname must be reflected in the document metadata if it differs. Test against a separate destination and retain the local source. The app does not yet have a one-click migration/restore UI; the JSON export is an additional recovery artifact, not a complete binary backup.
 
 ## AI spend and availability
 
