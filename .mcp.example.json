@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "steadier-household": {
+      "command": "node",
+      "args": [
+        "C:/Users/Emerald/Documents/Budgeting/node_modules/tsx/dist/cli.mjs",
+        "C:/Users/Emerald/Documents/Budgeting/scripts/mcp-server.ts"
+      ]
+    }
+  }
+}

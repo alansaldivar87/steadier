@@ -1,0 +1,10 @@
+{
+  "name": "Steadier · Our household",
+  "short_name": "Steadier",
+  "description": "One clear next step for our household money.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f3",
+  "theme_color": "#164c3d",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
